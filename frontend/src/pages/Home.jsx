@@ -4,13 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select"
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table"
 import { HorizontalChart } from "../components/others/EmployeePerformance";
 
@@ -135,8 +129,21 @@ const Home = () => {
                         {project.status}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <Progress value={project.progress} className="w-[60px]" />
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end">
+                        <div className="w-[100px] h-2 bg-gray-200 rounded-full mr-2">
+                          <div
+                            className={`h-full rounded-full ${
+                              project.progress === 100 ? 'bg-green-500' :
+                              project.progress >= 70 ? 'bg-blue-500' :
+                              project.progress >= 40 ? 'bg-yellow-500' :
+                              'bg-red-500'
+                            }`}
+                            style={{ width: `${project.progress}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium">{project.progress}%</span>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
