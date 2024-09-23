@@ -27,6 +27,7 @@ const Home = () => {
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         
         <Card x-chunk="dashboard-01-chunk-0">
+        <Link to="/projects">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Projects</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -35,8 +36,10 @@ const Home = () => {
             <div className="text-2xl font-bold">21</div>
             <p className="text-xs text-muted-foreground">12 Completed</p>
           </CardContent>
+          </Link>
         </Card>
         <Card x-chunk="dashboard-01-chunk-1">
+          <Link to='/employee'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Employees</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -45,6 +48,7 @@ const Home = () => {
             <div className="text-2xl font-bold">150</div>
             <p className="text-xs text-muted-foreground">18 Absent Today</p>
           </CardContent>
+          </Link>
         </Card>
         <Card x-chunk="dashboard-01-chunk-2">
           <Link to="/team">
