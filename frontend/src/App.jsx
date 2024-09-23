@@ -9,7 +9,7 @@ import Analytics from './pages/Analytics';
 import Home from './pages/Home';
 import Review from './pages/Review';
 import TeamManagement from './pages/TeamManagement';
-
+import EmployeeDashboard from './pages/EmployeeDashboard';
 const App = () => {
   return (  
     <Routes>
@@ -20,6 +20,7 @@ const App = () => {
         <Route path="/projects" element={<Projects />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/reviews" element={<Review />} />
+        <Route path="/emp" element={<EmployeeDashboard />} />
         <Route path="/home" element={<Home />} />
         <Route path="/team" element={<TeamManagement />} />
       </Route>
