@@ -155,11 +155,7 @@ export default function ProjectsPage() {
             <span className="text-xs text-gray-500">{folder.team}</span>
             <span className="text-xs text-gray-500">Due: {format(folder.dueDate, 'PP')}</span>
             <div className="flex -space-x-2">
-              {[...Array(Math.min(folder.files, 3))].map((_, i) => (
-                <Avatar key={i} className="w-6 h-6 border-2 border-white">
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-              ))}
+             
             </div>
             <span className="text-xs text-gray-500">{folder.files} files</span>
           </div>
