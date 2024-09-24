@@ -83,9 +83,7 @@ async function login(req, res) {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: user.email }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign({ id: user.email }, process.env.JWT_SECRET);
     return res.status(200).json({ success: true, token });
   } catch (err) {
     if (err instanceof z.ZodError) {
