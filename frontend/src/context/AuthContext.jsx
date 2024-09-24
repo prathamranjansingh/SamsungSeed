@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       console.log('No token found, setting authenticated state to false.');
     }
-    setLoading(false); // Done checking, set loading to false
+    setLoading(false); // Finished loading
   }, []);
 
   const login = (token) => {
@@ -35,13 +35,8 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   };
 
-  if (loading) {
-    // Optionally, you could display a loading spinner or nothing while loading
-    return <div>Loading...</div>;
-  }
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

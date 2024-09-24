@@ -2,10 +2,21 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const PrivateRoute = ({ element }) => {
-  const { isAuthenticated } = useAuth(); 
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
 
-  return isAuthenticated ? element : <Navigate to="/login" replace />;
+  if (loading) {
+    // Show a loading spinner or something while checking authentication
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    // If not authenticated, redirect to login
+    return <Navigate to="/login" />;
+  }
+
+  // If authenticated, allow access to the route
+  return children;
 };
 
-export default PrivateRoute;
+export default ProtectedRoute;
