@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useAuth } from '../../context/AuthContext';
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
@@ -15,6 +16,11 @@ import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 
 const Header = () => {
+  const { logout } = useAuth();
+  const handleLogout = () => {
+    logout(); // Call the logout function
+    window.location.href = '/login'; // Redirect to the login page after logout
+  };
   // State to track the selected menu item
   const [selected, setSelected] = useState('/home');
 
@@ -113,7 +119,7 @@ const Header = () => {
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
