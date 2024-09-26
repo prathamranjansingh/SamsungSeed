@@ -1,4 +1,3 @@
-import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
@@ -12,9 +11,6 @@ import Review from './pages/Review';
 import TeamManagement from './pages/TeamManagement';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import ProtectedRoute from './components/PrivateRoute';
-
-
-
 
 const App = () => {
   return (
