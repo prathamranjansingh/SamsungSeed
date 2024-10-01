@@ -59,24 +59,33 @@ export default function AttendanceUpload() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-center w-full">
-                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <FileSpreadsheet className="w-10 h-10 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">XLSX or XLS (MAX. 10MB)</p>
+                  <div className="flex flex-col items-center justify-center w-full">
+                    <input
+                      id="dropzone-file"
+                      type="file"
+                      className="hidden"
+                      accept=".xlsx, .xls"
+                      onChange={handleFileChange}
+                      onClick={(e) => { e.target.value = null }} // Clear previous file selection
+                    />
+                    {/* Show selected file name */}
+                    {fileName ? (
+                      <div className="flex items-center justify-between w-full p-4 border border-gray-300 rounded-lg">
+                        <p className="text-sm text-gray-700 dark:text-gray-300">{fileName}</p>
+                        <Button onClick={() => document.getElementById('dropzone-file').click()} >Change File</Button>
                       </div>
-                      <input id="dropzone-file" type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFileChange} />
-                    </label>
+                    ) : (
+                      <Button onClick={() => document.getElementById('dropzone-file').click()} className="w-full h-64 border-2 border-gray-300 border-dashed rounded-lg flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-700 hover:bg-gray-100">
+                        <FileSpreadsheet className="w-10 h-10 mb-3 text-gray-400" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">XLSX or XLS (MAX. 10MB)</p>
+                      </Button>
+                    )}
                   </div>
-                  {/* Display selected file name */}
-                  {fileName && (
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Selected file: <span className="font-semibold">{fileName}</span></p>
-                  )}
                 </CardContent>
                 <div className="flex justify-end p-4">
                   <Button onClick={closeModal} className="mr-2">Close</Button>
-                  <Button onClick={handleSubmit} className="bg-blue-500 text-white">Submit</Button>
+                  <Button onClick={handleSubmit}>Submit</Button>
                 </div>
               </Card>
             </div>
