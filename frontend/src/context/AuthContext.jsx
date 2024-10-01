@@ -13,12 +13,10 @@ export const AuthProvider = ({ children }) => {
     const token = Cookies.get('token');
     if (token) {
       setIsAuthenticated(true);
-      console.log('Token found in cookies, setting authenticated state to true.');
     } else {
       setIsAuthenticated(false);
-      console.log('No token found, setting authenticated state to false.');
     }
-    setLoading(false); // Finished loading
+    setLoading(false); 
   }, []);
 
   const login = (token) => {
