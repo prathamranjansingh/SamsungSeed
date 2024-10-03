@@ -71,20 +71,51 @@ async function login(req, res) {
   try {
     const { email, password } = loginSchema.parse(req.body);
 
-    const results = await db`SELECT * FROM Admin WHERE email = ${email}`;
-    if (results.length === 0) {
-      return res.status(404).send("No user found with that email");
+    // Check if user exists in Admin table
+    let results = await db`SELECT * FROM Admin WHERE email = ${email}`;
+    if (results.length > 0) {
+      const user = results[0];
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        const token = jwt.sign(
+          { id: user.email, role: "admin" },
+          process.env.JWT_SECRET
+        );
+        return res.status(200).json({ success: true, token, role: "admin" });
+      }
     }
 
-    const user = results[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).send("Invalid password");
+    // Check if user exists in Employee table
+    results = await db`SELECT * FROM Employee WHERE email = ${email}`;
+    if (results.length > 0) {
+      const user = results[0];
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        const token = jwt.sign(
+          { id: user.email, role: "employee" },
+          process.env.JWT_SECRET
+        );
+        return res.status(200).json({ success: true, token, role: "employee" });
+      }
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user.email }, process.env.JWT_SECRET);
-    return res.status(200).json({ success: true, token });
+    // Check if user exists in Team Lead table
+    results = await db`SELECT * FROM TeamLead WHERE email = ${email}`;
+    if (results.length > 0) {
+      const user = results[0];
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        const token = jwt.sign(
+          { id: user.email, role: "team_lead" },
+          process.env.JWT_SECRET
+        );
+        return res
+          .status(200)
+          .json({ success: true, token, role: "team_lead" });
+      }
+    }
+
+    return res.status(401).send("Invalid credentials");
   } catch (err) {
     if (err instanceof z.ZodError) {
       return res.status(400).send(err.errors);
