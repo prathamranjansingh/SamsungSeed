@@ -26,7 +26,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, PlusCircle } from "lucide-react";
-import employeesData from '../assets/demoData/employee.json';
+import employeesData from '../../assets/demoData/employee.json';
 
 const Employee = () => {
   const [employees, setEmployees] = useState(employeesData);

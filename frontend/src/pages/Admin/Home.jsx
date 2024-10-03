@@ -3,13 +3,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
+} from "../../components/ui/card";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table"
-import { HorizontalChart } from "../components/others/EmployeePerformance";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table"
+import { HorizontalChart } from "../../components/others/Admin/EmployeePerformance";
 
-import { Progress } from "../components/ui/progress"
-import ProjectBarchart from "../components/others/ProjectBarchart";
+import { Progress } from "../../components/ui/progress"
+import ProjectBarchart from "../../components/others/Admin/ProjectBarchart";
 
 import { Activity, CreditCard, Package, Users } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -43,7 +43,7 @@ const Home = () => {
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         
         <Card x-chunk="dashboard-01-chunk-0">
-        <Link to="/projects">
+        <Link to="/admin/projects">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Projects</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -55,7 +55,7 @@ const Home = () => {
           </Link>
         </Card>
         <Card x-chunk="dashboard-01-chunk-1">
-          <Link to='/employee'>
+          <Link to='/admin/employee'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Employees</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />

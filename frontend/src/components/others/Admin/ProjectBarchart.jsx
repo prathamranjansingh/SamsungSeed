@@ -1,7 +1,7 @@
 import { TrendingUp } from 'lucide-react';
 import React from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
 const ProjectBarchart = () => {

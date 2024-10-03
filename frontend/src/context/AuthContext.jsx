@@ -1,40 +1,43 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [user, setUser] = useState(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    return token && role ? { token, role } : null;
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = Cookies.get('token');
-    if (token) {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (token && role) {
+      setUser({ token, role });
     }
-    setLoading(false); 
   }, []);
 
-  const login = (token) => {
-    Cookies.set('token', token, { expires: 1 });
-    setIsAuthenticated(true);
-    console.log('Logging in, setting token in cookies.');
-    navigate('/home');
+  const login = (token, role) => {
+    setUser({ token, role });
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', role);
+    navigate(`/${role}/home`);
+    console.log(user);
   };
 
   const logout = () => {
-    Cookies.remove('token');
-    setIsAuthenticated(false);
-    console.log('Logging out, token removed from cookies.');
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
     navigate('/login');
+   
+    
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

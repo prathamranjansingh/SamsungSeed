@@ -6,12 +6,12 @@ import {
   LineChart,
   FileSearch,
 } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { Badge } from "../../ui/badge";
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   // State to track the selected route
-  const [selected, setSelected] = useState('/home');
+  const [selected, setSelected] = useState('/admin/home');
 
   const baseClassName = "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary";
   const activeClassName = "flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-primary transition-all hover:text-primary";
@@ -27,34 +27,34 @@ const Navbar = () => {
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             <Link
-              to="/home"
-              className={selected === "/home" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/home")}
+              to="/admin/home"
+              className={selected === "/admin/home" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/home")}
             >
               <Home className="h-4 w-4" />
               Dashboard
             </Link>
            
             <Link
-              to="/projects"
-              className={selected === "/projects" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projects")}
+              to="/admin/projects"
+              className={selected === "/admin/projects" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/projects")}
             >
               <Package className="h-4 w-4" />
               Projects
             </Link>
             <Link
-              to="/employee"
-              className={selected === "/employee" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/employee")}
+              to="/admin/employee"
+              className={selected === "/admin/employee" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/employee")}
             >
               <Users className="h-4 w-4" />
               Employee
             </Link>
             <Link
-              to="/reviews"
-              className={selected === "/reviews" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/reviews")}
+              to="/admin/reviews"
+              className={selected === "/admin/reviews" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/reviews")}
             >
               <FileSearch className="h-4 w-4" />
               Reviews
@@ -63,9 +63,9 @@ const Navbar = () => {
               </Badge>
             </Link>
             <Link
-              to="/analytics"
-              className={selected === "/analytics" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/analytics")}
+              to="/admin/analytics"
+              className={selected === "/admin/analytics" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/analytics")}
             >
               <LineChart className="h-4 w-4" />
               Analytics
