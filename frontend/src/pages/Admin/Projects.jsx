@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Avatar, AvatarFallback } from "../components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Avatar, AvatarFallback } from "../../components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
 import { FolderIcon, FileIcon, MoreVerticalIcon, PlusIcon, UploadIcon, CalendarIcon } from "lucide-react";
-import { Calendar } from "../components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover"
+import { Calendar } from "../../components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover"
 import { useToast } from "@/hooks/use-toast";
 import teamData from "@/assets/demoData/teamData.json";
 import { format } from "date-fns";

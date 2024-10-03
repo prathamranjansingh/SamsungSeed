@@ -6,14 +6,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { useAuth } from '../../context/AuthContext';
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+} from "../../ui/dropdown-menu";
+import { useAuth } from '../../../context/AuthContext';
+import { Sheet, SheetContent, SheetTrigger } from "../../ui/sheet";
 import { Link } from "react-router-dom";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {  CircleUser, FileSearch, Home, LineChart, Menu, Package, Search, Users } from "lucide-react";
-import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
+import { Input } from "../../ui/input";
+import { Badge } from "../../ui/badge";
 
 const Header = () => {
   const { logout } = useAuth();
@@ -22,7 +22,7 @@ const Header = () => {
     window.location.href = '/login'; // Redirect to the login page after logout
   };
   // State to track the selected menu item
-  const [selected, setSelected] = useState('/home');
+  const [selected, setSelected] = useState('/admin/home');
 
   // Define the classNames
   const baseClassName = "mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground";
@@ -48,34 +48,34 @@ const Header = () => {
               <span className="sr-only">Acme Inc</span>
             </Link>
             <Link
-              to="/home"
-              className={selected === "/home" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/home")}
+              to="/admin/home"
+              className={selected === "/admin/home" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/home")}
             >
               <Home className="h-5 w-5" />
               Dashboard
             </Link>
             
             <Link
-              to="/projects"
-              className={selected === "/projects" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projects")}
+              to="/admin/projects"
+              className={selected === "/admin/projects" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/projects")}
             >
               <Package className="h-5 w-5" />
               Projects
             </Link>
             <Link
-              to="/employee"
-              className={selected === "/employee" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/employee")}
+              to="/admin/employee"
+              className={selected === "/admin/employee" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/employee")}
             >
               <Users className="h-5 w-5" />
               Employee
             </Link>
             <Link
-              to="/reviews"
-              className={selected === "/reviews" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/reviews")}
+              to="/admin/reviews"
+              className={selected === "/admin/reviews" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/reviews")}
             >
               <FileSearch className="h-5 w-5" />
               Reviews
@@ -84,9 +84,9 @@ const Header = () => {
               </Badge>
             </Link>
             <Link
-              to="/analytics"
-              className={selected === "/analytics" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/analytics")}
+              to="/admin/analytics"
+              className={selected === "/admin/analytics" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/analytics")}
             >
               <LineChart className="h-5 w-5" />
               Analytics
