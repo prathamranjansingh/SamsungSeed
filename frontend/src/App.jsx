@@ -13,7 +13,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin/*" element={<AdminRoutes />} />
-          </Route>
+        </Route>
       </Routes>
     </AuthProvider>
   );

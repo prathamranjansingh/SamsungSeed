@@ -70,8 +70,6 @@ async function register(req, res) {
 async function login(req, res) {
   try {
     const { email, password } = loginSchema.parse(req.body);
-
-    // Check if user exists in Admin table
     let results = await db`SELECT * FROM Admin WHERE email = ${email}`;
     if (results.length > 0) {
       const user = results[0];
@@ -206,5 +204,4 @@ async function forgotPassword(req, res) {
   }
 }
 
-// Export all functions and middleware
 export { login, register, resetPassword, forgotPassword, authMiddleware };
