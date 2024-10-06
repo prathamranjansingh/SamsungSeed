@@ -28,10 +28,19 @@ const attendanceRecords = [
 
 export function EmployeeAttendance() {
   return (
-    <div className="container mx-auto p-4 space-y-6">
+<>
+<main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    <div className="flex items-center">
+      <h1 className="text-lg font-semibold md:text-2xl">
+      Employee Attendance
+      </h1>
+    </div>
+    <div className="rounded-lg border border-dashed shadow-sm">
+      <div className="flex flex-col items-center gap-1 text-center">
+      <div className="container mx-auto p-4 space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-bold">Employee Attendance</CardTitle>
+          <CardTitle className="text-2xl font-bold"></CardTitle>
           <UserCircle className="h-8 w-8 text-gray-400" />
         </CardHeader>
         <CardContent>
@@ -123,5 +132,11 @@ export function EmployeeAttendance() {
         </CardContent>
       </Card>
     </div>
+      </div>
+    </div>
+</main>
+
+    
+    </>
   )
 }

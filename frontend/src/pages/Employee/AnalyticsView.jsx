@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AreaChart,
   Area,
@@ -12,36 +12,41 @@ import {
   PieChart,
   Pie,
   Cell,
-} from 'recharts'
+} from "recharts";
 
 export function AnalyticsView() {
   const productivityData = [
-    { name: 'Mon', productivity: 70 },
-    { name: 'Tue', productivity: 82 },
-    { name: 'Wed', productivity: 93 },
-    { name: 'Thu', productivity: 89 },
-    { name: 'Fri', productivity: 78 },
-    { name: 'Sat', productivity: 60 },
-    { name: 'Sun', productivity: 50 },
-  ]
+    { name: "Mon", productivity: 70 },
+    { name: "Tue", productivity: 82 },
+    { name: "Wed", productivity: 93 },
+    { name: "Thu", productivity: 89 },
+    { name: "Fri", productivity: 78 },
+    { name: "Sat", productivity: 60 },
+    { name: "Sun", productivity: 50 },
+  ];
 
   const taskCompletionData = [
-    { name: 'Completed', value: 75 },
-    { name: 'Remaining', value: 25 },
-  ]
+    { name: "Completed", value: 75 },
+    { name: "Remaining", value: 25 },
+  ];
 
   const projectStatusData = [
-    { name: 'On Track', value: 60 },
-    { name: 'At Risk', value: 30 },
-    { name: 'Delayed', value: 10 },
-  ]
+    { name: "On Track", value: 60 },
+    { name: "At Risk", value: 30 },
+    { name: "Delayed", value: 10 },
+  ];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Analytics Dashboard</h2>
-      <div className="grid gap-6 md:grid-cols-2">
+    <>
+      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+        <div className="flex items-center">
+          <h1 className="text-lg font-semibold md:text-2xl">
+            Analytics Analytics Dashboard
+          </h1>
+        </div>
+        <div className="border border-dashed shadow-sm p-10">
         <Card>
           <CardHeader>
             <CardTitle>Weekly Productivity</CardTitle>
@@ -53,7 +58,12 @@ export function AnalyticsView() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <RechartsTooltip />
-                <Area type="monotone" dataKey="productivity" stroke="#8884d8" fill="#8884d8" />
+                <Area
+                  type="monotone"
+                  dataKey="productivity"
+                  stroke="#8884d8"
+                  fill="#8884d8"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -73,10 +83,15 @@ export function AnalyticsView() {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
                 >
                   {taskCompletionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
               </PieChart>
@@ -96,14 +111,18 @@ export function AnalyticsView() {
                 <RechartsTooltip />
                 <Bar dataKey="value" fill="#8884d8">
                   {projectStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
-    </div>
-  )
+        </div>
+      </main>
+    </>
+  );
 }

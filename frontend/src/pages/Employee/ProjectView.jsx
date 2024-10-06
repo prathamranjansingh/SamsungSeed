@@ -59,59 +59,72 @@ export function ProjectView() {
   ]
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold">My Projects</h2>
-      {projects.map((project) => (
-        <Card key={project.id}>
-          <CardHeader>
-            <CardTitle className="flex justify-between items-center">
-              <span>{project.name}</span>
-              <span className="text-sm font-normal text-muted-foreground">{project.status}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-muted-foreground">{project.description}</p>
-              <div>
-                <h4 className="font-semibold">Team Lead:</h4>
-                <p>{project.teamLead}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Team Members:</h4>
-                <div className="flex flex-wrap gap-4">
-                  {project.teamMembers.map((member, index) => (
-                    <TooltipProvider key={index}>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Avatar>
-                            <AvatarImage src={member.avatar} alt={member.name} />
-                            <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                          </Avatar>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{member.name}</p>
-                          <p className="text-sm text-muted-foreground">{member.role}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                </div>
-              </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Start Date: {project.startDate}</span>
-                <span>End Date: {project.endDate}</span>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Project Progress:</h4>
-                <div className="flex items-center space-x-4">
-                  <Progress value={project.progress} className="flex-1" />
-                  <span className="text-sm font-medium">{project.progress}%</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    <div className="flex items-center">
+      <h1 className="text-lg font-semibold md:text-2xl">Analytics
+      My Projects
+      </h1>
     </div>
+    <div className="flex flex-1 p-4 items-center justify-center rounded-lg border border-dashed shadow-sm">
+      <div className="flex flex-col items-center gap-1 text-center">
+      <div className="space-y-6">
+     {projects.map((project) => (
+       <Card key={project.id}>
+         <CardHeader>
+           <CardTitle className="flex justify-between items-center">
+             <span>{project.name}</span>
+             <span className="text-sm font-normal text-muted-foreground">{project.status}</span>
+           </CardTitle>
+         </CardHeader>
+         <CardContent>
+           <div className="space-y-4">
+             <p className="text-muted-foreground">{project.description}</p>
+             <div>
+               <h4 className="font-semibold">Team Lead:</h4>
+               <p>{project.teamLead}</p>
+             </div>
+             <div>
+               <h4 className="font-semibold mb-2">Team Members:</h4>
+               <div className="flex flex-wrap gap-4">
+                 {project.teamMembers.map((member, index) => (
+                   <TooltipProvider key={index}>
+                     <Tooltip>
+                       <TooltipTrigger>
+                         <Avatar>
+                           <AvatarImage src={member.avatar} alt={member.name} />
+                           <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                         </Avatar>
+                       </TooltipTrigger>
+                       <TooltipContent>
+                         <p>{member.name}</p>
+                         <p className="text-sm text-muted-foreground">{member.role}</p>
+                       </TooltipContent>
+                     </Tooltip>
+                   </TooltipProvider>
+                 ))}
+               </div>
+             </div>
+             <div className="flex justify-between text-sm text-muted-foreground">
+               <span>Start Date: {project.startDate}</span>
+               <span>End Date: {project.endDate}</span>
+             </div>
+             <div>
+               <h4 className="font-semibold mb-2">Project Progress:</h4>
+               <div className="flex items-center space-x-4">
+                 <Progress value={project.progress} className="flex-1" />
+                 <span className="text-sm font-medium">{project.progress}%</span>
+               </div>
+             </div>
+           </div>
+         </CardContent>
+       </Card>
+     ))}
+   </div>
+      </div>
+    </div>
+</main>
+
+   
   )
 }
