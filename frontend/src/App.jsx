@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminRoutes from './pages/Dashboard/AdminRoutes';
 import ProtectedRoute from './components/PrivateRoute';
-
+// import TeamLeadRoute from './pages/Dashboard/TeamLeadRoute'
 const App = () => {
   return (
     <AuthProvider>
@@ -13,7 +13,10 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin/*" element={<AdminRoutes />} />
-          </Route>
+        </Route>
+        {/* <Route element={<ProtectedRoute allowedRoles={['lead']} />}>
+            <Route path="/lead/*" element={<TeamLeadRoute />} />
+        </Route> */}
       </Routes>
     </AuthProvider>
   );

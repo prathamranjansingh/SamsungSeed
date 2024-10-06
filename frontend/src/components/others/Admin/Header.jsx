@@ -11,7 +11,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Sheet, SheetContent, SheetTrigger } from "../../ui/sheet";
 import { Link } from "react-router-dom";
 import { Button } from "../../ui/button";
-import {  CircleUser, FileSearch, Home, LineChart, Menu, Package, Search, Users } from "lucide-react";
+import {  CalendarCheck, CircleUser, FileSearch, Home, LineChart, Menu, Package, Search, Users } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Badge } from "../../ui/badge";
 
@@ -73,15 +73,12 @@ const Header = () => {
               Employee
             </Link>
             <Link
-              to="/admin/reviews"
-              className={selected === "/admin/reviews" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/admin/reviews")}
+              to="/admin/attendance"
+              className={selected === "/admin/attendance" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/attendance")}
             >
-              <FileSearch className="h-5 w-5" />
-              Reviews
-              <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                6
-              </Badge>
+              <CalendarCheck  className="h-5 w-5" />
+              Attendance
             </Link>
             <Link
               to="/admin/analytics"
