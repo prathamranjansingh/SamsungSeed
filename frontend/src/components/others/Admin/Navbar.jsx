@@ -5,6 +5,7 @@ import {
   Users,
   LineChart,
   FileSearch,
+  CalendarCheck,
 } from "lucide-react";
 import { Badge } from "../../ui/badge";
 import { Link } from 'react-router-dom';
@@ -52,15 +53,12 @@ const Navbar = () => {
               Employee
             </Link>
             <Link
-              to="/admin/reviews"
-              className={selected === "/admin/reviews" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/admin/reviews")}
+              to="/admin/attendance"
+              className={selected === "/admin/attendance" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/admin/attendance")}
             >
-              <FileSearch className="h-4 w-4" />
-              Reviews
-              <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                6
-              </Badge>
+              <CalendarCheck  className="h-4 w-4" />
+              Attendance
             </Link>
             <Link
               to="/admin/analytics"
@@ -70,6 +68,7 @@ const Navbar = () => {
               <LineChart className="h-4 w-4" />
               Analytics
             </Link>
+            
           </nav>
         </div>
       </div>
