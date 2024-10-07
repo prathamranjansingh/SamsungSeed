@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -21,22 +21,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const employeesData = [
-  {
-    id: "01",
-    name: "Chandra",
-    day1: "Absent", day2: "Absent", day3: "Present", day4: "Absent", day5: "Absent",
-    day6: "Present", day7: "Present", day8: "Present", day9: "Present", day10: "Absent",
-    day11: "Absent", day12: "Absent", day13: "Present", day14: "Present", day15: "Present",
-    day16: "Present", day17: "Present", day18: "Absent", day19: "Absent", day20: "Present",
-    day21: "Present", day22: "Present", day23: "Present", day24: "Absent", day25: "Absent",
-    day26: "Absent", day27: "Present", day28: "Present", day29: "Present", day30: "Present",
-    day31: "Absent",
-    total_present: 18,
-    total_absent: 13,
-  },
-];
-
 const months = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
@@ -51,12 +35,12 @@ export default function AttendanceUpload() {
   const [fileName, setFileName] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(months[new Date().getMonth()]);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [employeesData, setEmployeesData] = useState([]); // Store attendance data
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [token, setToken] = useState('');
 
   useEffect(() => {
-    // Set token here, e.g., from local storage or context
-    setToken(localStorage.getItem('token')); // Replace with actual token
+    setToken(localStorage.getItem('token'));
   }, []);
 
   const handleUploadClick = () => {
@@ -110,6 +94,20 @@ export default function AttendanceUpload() {
     setSelectedEmployee(employee);
   };
 
+  const fetchAttendanceDetails = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/attendance`, {
+        params: { month: months.indexOf(selectedMonth) + 1, year: selectedYear },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      setEmployeesData(response.data); // Update state with fetched data
+    } catch (error) {
+      console.error("Error fetching attendance details:", error);
+    }
+  };
+
   return (
     <main className="relative flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="flex items-center justify-between">
@@ -139,6 +137,7 @@ export default function AttendanceUpload() {
               ))}
             </SelectContent>
           </Select>
+          <Button onClick={fetchAttendanceDetails}>Search</Button> {/* Search button */}
           <Button onClick={handleUploadClick}>
             Upload Attendance
           </Button>

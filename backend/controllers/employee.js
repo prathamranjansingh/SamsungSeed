@@ -20,6 +20,17 @@ const registerSchema = z.object({
   email: z.string().email("Invalid email").min(1, "Email is required"),
 });
 
+async function getEmployees(req, res) {
+  try {
+    const employees = await db`SELECT id, name, email, role, experience FROM Employee`; // Select necessary fields
+    return res.json(employees); // Return employee data as JSON
+  } catch (err) {
+    console.error("Error retrieving employees:", err);
+    return res.status(500).send("Error retrieving employees");
+  }
+}
+
+
 async function registerEmployee(req, res) {
     const { name, email } = registerSchema.parse(req.body); // Only name and email required
   
@@ -66,4 +77,4 @@ async function registerEmployee(req, res) {
     }
   }
 
-  export {registerEmployee}
+  export {registerEmployee, getEmployees}

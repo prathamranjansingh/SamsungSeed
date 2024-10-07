@@ -252,4 +252,41 @@ async function handleAttendanceUpload(req, res) {
   }
 }
 
-export {handleAttendanceUpload}
+
+function constructTableName(month, year) {
+    const monthNumber = String(month).padStart(2, '0'); // Ensure two-digit format
+    return `${monthNumber}summary_${year}`; // Format: MMsummary_YYYY
+  }
+  
+  // Function to get attendance details from the specified table
+  async function getAttendanceDetails(month, year) {
+    const tableName = constructTableName(month, year);
+    
+    const query = `SELECT * FROM "${tableName}";`;
+    try {
+      const { rows } = await pool.query(query);
+      return rows; // Return the retrieved rows
+    } catch (err) {
+      console.error('Error retrieving attendance details:', err);
+      throw new Error('Error retrieving attendance details');
+    }
+  }
+  
+  // Function to handle the GET request for attendance details
+  async function handleGetAttendance(req, res) {
+    const { month, year } = req.query;
+  
+    // Validate the month and year
+    if (!month || !year || isNaN(month) || isNaN(year)) {
+      return res.status(400).send('Invalid month or year.');
+    }
+  
+    try {
+      const attendanceDetails = await getAttendanceDetails(month, year);
+      res.json(attendanceDetails);
+    } catch (err) {
+      res.status(500).send('Error fetching attendance details.');
+    }
+  }
+
+export {handleAttendanceUpload,handleGetAttendance}
