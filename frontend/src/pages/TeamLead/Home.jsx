@@ -8,42 +8,78 @@ import {
   Users,
   FileCheck2,
   Send,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function EmployeeHome() {
+    const projects = [
+        { id: 1, name: "Traffic Sign Recognition", progress: 75, totalImages: 1000, completedImages: 750, urgentReviews: 5 },
+        { id: 2, name: "Medical Imaging Analysis", progress: 60, totalImages: 800, completedImages: 480, urgentReviews: 2 },
+        { id: 3, name: "Satellite Imagery Labeling", progress: 40, totalImages: 1200, completedImages: 480, urgentReviews: 8 },
+      ]
+      const teamMembers = [
+        { id: 1, name: "Alice Johnson", role: "Senior Annotator", performance: 95, avatar: "/avatars/alice.jpg" },
+        { id: 2, name: "Bob Smith", role: "Annotator", performance: 88, avatar: "/avatars/bob.jpg" },
+        { id: 3, name: "Carol Williams", role: "Quality Checker", performance: 92, avatar: "/avatars/carol.jpg" },
+        { id: 4, name: "David Brown", role: "Annotator", performance: 85, avatar: "/avatars/david.jpg" },
+      ]
+      
+      
   return (
     <div className="flex flex-col min-h-screen">
       
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
+        <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">5</div>
-              <p className="text-xs text-muted-foreground">1 completed this month</p>
+              <div className="text-2xl font-bold">{projects.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {projects.filter(p => p.progress === 100).length} completed
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Annotators</CardTitle>
+              <CardTitle className="text-sm font-medium">Team Members</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">25</div>
-              <p className="text-xs text-muted-foreground">Across all projects</p>
+              <div className="text-2xl font-bold">20</div>
+              <p className="text-xs text-muted-foreground">
+               6 Each Team
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Images in Queue</CardTitle>
+              <CardTitle className="text-sm font-medium">Images Annotated</CardTitle>
               <FileCheck2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">734</div>
-              <p className="text-xs text-muted-foreground">Waiting for annotation</p>
+              <div className="text-2xl font-bold">
+                {projects.reduce((sum, project) => sum + project.completedImages, 0)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Out of {projects.reduce((sum, project) => sum + project.totalImages, 0)} total
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Quality Check</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {projects.reduce((sum, project) => sum + project.urgentReviews, 0)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Reassign
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -54,12 +90,7 @@ export default function EmployeeHome() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { name: "Traffic Sign Recognition", progress: 75, team: 6, remaining: 250, total: 1000 },
-                  { name: "Medical Imaging Analysis", progress: 50, team: 8, remaining: 500, total: 1000 },
-                  { name: "Satellite Imagery Labeling", progress: 25, team: 5, remaining: 750, total: 1000 },
-                  { name: "Facial Recognition Dataset", progress: 60, team: 6, remaining: 400, total: 1000 },
-                ].map((project) => (
+                {projects.map((project) => (
                   <div key={project.name} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium leading-none">{project.name}</p>
@@ -75,7 +106,7 @@ export default function EmployeeHome() {
               </div>
             </CardContent>
           </Card>
-          <Card className="col-span-3">
+          <Card className="col-span-4">
             <CardHeader>
               <CardTitle>Team Performance</CardTitle>
               <CardDescription>Annotation accuracy and speed</CardDescription>
@@ -139,25 +170,7 @@ export default function EmployeeHome() {
               </div>
             </CardContent>
           </Card>
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Quality Check Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <Button>
-                <Send className="mr-2 h-4 w-4" />
-                Send Feedback
-              </Button>
-              <Button>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Approve Annotations
-              </Button>
-              <Button>
-                <FileCheck2 className="mr-2 h-4 w-4" />
-                Finalize and Archive
-              </Button>
-            </CardContent>
-          </Card>
+        
         </div>
       </main>
     </div>
