@@ -35,9 +35,10 @@ export default function AttendanceUpload() {
   const [fileName, setFileName] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(months[new Date().getMonth()]);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
-  const [employeesData, setEmployeesData] = useState([]); // Store attendance data
+  const [employeesData, setEmployeesData] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [token, setToken] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
   useEffect(() => {
     setToken(localStorage.getItem('token'));
@@ -102,10 +103,32 @@ export default function AttendanceUpload() {
           'Authorization': `Bearer ${token}`,
         },
       });
-      setEmployeesData(response.data); // Update state with fetched data
+      setEmployeesData(response.data);
     } catch (error) {
       console.error("Error fetching attendance details:", error);
     }
+  };
+
+  const sortedEmployeesData = [...employeesData].sort((a, b) => {
+    if (sortConfig.key === 'present') {
+      return sortConfig.direction === 'ascending' 
+        ? a.total_present - b.total_present 
+        : b.total_present - a.total_present;
+    }
+    if (sortConfig.key === 'absent') {
+      return sortConfig.direction === 'ascending' 
+        ? a.total_absent - b.total_absent 
+        : b.total_absent - a.total_absent;
+    }
+    return 0; // No sorting if key is null
+  });
+
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
   };
 
   return (
@@ -137,10 +160,8 @@ export default function AttendanceUpload() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={fetchAttendanceDetails}>Search</Button> {/* Search button */}
-          <Button onClick={handleUploadClick}>
-            Upload Attendance
-          </Button>
+          <Button onClick={fetchAttendanceDetails}>Search</Button>
+          <Button onClick={handleUploadClick}>Upload Attendance</Button>
         </div>
       </div>
 
@@ -153,12 +174,20 @@ export default function AttendanceUpload() {
             <TableHeader>
               <TableRow>
                 <TableHead>Employee Name</TableHead>
-                <TableHead>Total Present</TableHead>
-                <TableHead>Total Absent</TableHead>
+                <TableHead>
+                  <button onClick={() => handleSort('present')}>
+                    Total Present {sortConfig.key === 'present' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button onClick={() => handleSort('absent')}>
+                    Total Absent {sortConfig.key === 'absent' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </button>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employeesData.map((employee) => (
+              {sortedEmployeesData.map((employee) => (
                 <TableRow key={employee.id}>
                   <TableCell>
                     <Dialog>
@@ -222,22 +251,23 @@ export default function AttendanceUpload() {
                   onClick={(e) => { e.target.value = null }}
                 />
                 {fileName ? (
-                  <div className="flex items-center justify-between w-full p-4 border border-gray-300 rounded-lg">
-                    <p className="text-sm text-gray-700 dark:text-gray-300">{fileName}</p>
-                    <Button onClick={() => document.getElementById('dropzone-file').click()} variant="outline">Change File</Button>
+                  <div className="flex items-center justify-center w-full p-4 border border-dashed border-gray-300">
+                    <FileSpreadsheet className="mr-2" />
+                    {fileName}
                   </div>
                 ) : (
-                  <Button onClick={() => document.getElementById('dropzone-file').click()} variant="outline" className="w-full h-64 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                    <FileSpreadsheet className="w-10 h-10 mb-3 text-gray-400" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                  </Button>
+                  <label
+                    htmlFor="dropzone-file"
+                    className="flex items-center justify-center w-full p-4 border border-dashed border-gray-300 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="mr-2" />
+                    <span className="text-gray-600">Drag and drop your file here or click to upload</span>
+                  </label>
                 )}
+                <Button onClick={handleSubmit} className="mt-4 w-full">Upload</Button>
+                <Button onClick={closeModal} variant="secondary" className="mt-2 w-full">Cancel</Button>
               </div>
             </CardContent>
-            <div className="flex justify-end p-4">
-              <Button variant="ghost" onClick={closeModal}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={!file} className="ml-2">Upload</Button>
-            </div>
           </Card>
         </div>
       )}
