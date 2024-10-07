@@ -76,10 +76,10 @@ async function login(req, res) {
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
         const token = jwt.sign(
-          { id: user.email, role: "admin" },
+          { id: user.email, role: "teamlead" },
           process.env.JWT_SECRET
         );
-        return res.status(200).json({ success: true, token, role: "admin" });
+        return res.status(200).json({ success: true, token, role: "teamlead" });
       }
     }
 
