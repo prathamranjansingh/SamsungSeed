@@ -19,26 +19,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { CalendarIcon, PlusCircle } from "lucide-react";
 import employeesData from '../../assets/demoData/employee.json';
+import axios from 'axios'; // Import Axios
 
 const Employee = () => {
   const [employees, setEmployees] = useState(employeesData);
   const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEmployee, setNewEmployee] = useState({
-    employee: "",
+    name: "",
     email: "",
-    phone: "",
-    status: "Active",
-    dueDate: null ,
-    address: "",
   });
   const { toast } = useToast();
 
@@ -61,30 +53,31 @@ const Employee = () => {
     setNewEmployee((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDateChange = (date) => {
-    setNewEmployee((prev) => ({ ...prev, dueDate: date || null }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const formattedEmployee = {
-      ...newEmployee,
-      dueDate: newEmployee.dueDate ? format(newEmployee.dueDate, 'yyyy-MM-dd') : '',
-    };
-    setEmployees((prev) => [...prev, formattedEmployee]);
-    setNewEmployee({
-      employee: "",
-      email: "",
-      phone: "",
-      status: "Active",
-      dueDate: null,
-      address: "",
-    });
-    setIsDialogOpen(false);
-    toast({
-      title: "Employee Added",
-      description: "New employee has been successfully added.",
-    });
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/register-employee`, newEmployee);
+      setEmployees((prev) => [...prev, { name: response.data.name, email: response.data.email }]);
+
+      // Reset the newEmployee state
+      setNewEmployee({
+        name: "",
+        email: "",
+      });
+
+      setIsDialogOpen(false);
+      toast({
+        title: "Employee Added",
+        description: "New employee has been successfully added.",
+      });
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add the employee. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -94,7 +87,6 @@ const Employee = () => {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
-              <PlusCircle className="h-5 w-5" />
               Create Employee
             </Button>
           </DialogTrigger>
@@ -109,8 +101,8 @@ const Employee = () => {
                 </Label>
                 <Input
                   id="name"
-                  name="employee"
-                  value={newEmployee.employee}
+                  name="name"
+                  value={newEmployee.name}
                   onChange={handleInputChange}
                   className="col-span-3"
                   required
@@ -130,60 +122,6 @@ const Employee = () => {
                   required
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone" className="text-right">
-                  Phone
-                </Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={newEmployee.phone}
-                  onChange={handleInputChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="dueDate" className="text-right">
-                  Due Date
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "col-span-3 justify-start text-left font-normal",
-                        !newEmployee.dueDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {newEmployee.dueDate ? format(newEmployee.dueDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={newEmployee.dueDate || undefined}
-                      onSelect={handleDateChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="address" className="text-right">
-                  Address
-                </Label>
-                <Input
-                  id="address"
-                  name="address"
-                  value={newEmployee.address}
-                  onChange={handleInputChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
               <Button type="submit" className="ml-auto">
                 Create Employee
               </Button>
@@ -195,36 +133,20 @@ const Employee = () => {
         <CardContent className="p-0">
           <div className="overflow-auto h-[calc(100vh-250px)] rounded-md">
             <Table>
-              <TableHeader className="sticky top-0 bg-white dark:bg-gray-950 z-10">
+              <TableHeader className="sticky top-0 bg-white z-10">
                 <TableRow>
-                  <TableHead className="w-[250px]">Employee</TableHead>
-                  <TableHead className="hidden sm:table-cell">Phone No.</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">Due Date</TableHead>
-                  <TableHead className="hidden lg:table-cell">Address</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedEmployees.map((employee, index) => (
                   <TableRow key={index}>
                     <TableCell>
-                      <div className="font-medium">{employee.employee}</div>
-                      <div className="text-sm text-muted-foreground">{employee.email}</div>
+                      <div className="font-medium">{employee.name}</div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{employee.phone}</TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={employee.status.toLowerCase() === 'active' ? 'default' : 'destructive'}
-                        className={employee.status.toLowerCase() === 'active' ? 'bg-green-500 hover:bg-green-600' : ''}
-                      >
-                        {employee.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">{employee.dueDate}</TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <div className="max-w-[200px] overflow-x-auto whitespace-nowrap">
-                        {employee.address}
-                      </div>
+                      <div className="text-sm text-muted-foreground">{employee.email}</div>
                     </TableCell>
                   </TableRow>
                 ))}

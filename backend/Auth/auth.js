@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { db } from "../index.js";
-import { registerMail } from "../utils/mailSend.js";
+
 import nodemailer from "nodemailer";
 import { z } from "zod";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -21,11 +21,14 @@ if (
   );
 }
 
-// Define Zod schemas for validation
-const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
+const transporter = nodemailer.createTransport({
+  secure: true,
+  host: 'smtp.gmail.com',
+  port: 465,
+  auth: {
+      user: process.env.EMAIL_USER, // Consider using environment variables for sensitive info
+      pass: process.env.EMAIL_PASS // Consider using environment variables for sensitive info
+  }
 });
 
 const loginSchema = z.object({
@@ -42,44 +45,27 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email format"),
 });
 
-// Register new user
-async function register(req, res) {
-  const { name, email, password } = registerSchema.parse(req.body);
 
-  if (!name || !email || !password) {
-    return res.status(400).send("All fields are required");
-  }
 
-  try {
-    const result = await db`SELECT * FROM Admin WHERE email = ${email}`;
-    if (result.length > 0) {
-      return res.status(400).send("User already exists");
-    }
 
-    const hash = await bcrypt.hash(password, saltRounds);
-    await db`INSERT INTO Admin (username, email, password) VALUES (${name}, ${email}, ${hash})`;
-    registerMail(email, "SAMSUNG SEED Team", name);
-    return res.send("User registered successfully");
-  } catch (err) {
-    console.error("Error saving user:", err);
-    return res.status(500).send("Error saving user");
-  }
-}
+
 
 // User login
 async function login(req, res) {
   try {
     const { email, password } = loginSchema.parse(req.body);
-    let results = await db`SELECT * FROM Admin WHERE email = ${email}`;
+
+    // Check if user exists in Admin table
+    let results = await db`SELECT * FROM Admin WHERE admin_email = ${email}`;
     if (results.length > 0) {
       const user = results[0];
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
         const token = jwt.sign(
-          { id: user.email, role: "teamlead" },
+          { id: user.email, role: "admin" },
           process.env.JWT_SECRET
         );
-        return res.status(200).json({ success: true, token, role: "teamlead" });
+        return res.status(200).json({ success: true, token, role: "admin" });
       }
     }
 
@@ -204,4 +190,5 @@ async function forgotPassword(req, res) {
   }
 }
 
-export { login, register, resetPassword, forgotPassword, authMiddleware };
+// Export all functions and middleware
+export { login, resetPassword, forgotPassword, authMiddleware };

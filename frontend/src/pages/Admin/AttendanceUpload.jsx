@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, FileSpreadsheet, ChevronDown } from 'lucide-react';
+import { Upload, FileSpreadsheet } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -51,6 +52,12 @@ export default function AttendanceUpload() {
   const [selectedMonth, setSelectedMonth] = useState(months[new Date().getMonth()]);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    // Set token here, e.g., from local storage or context
+    setToken(localStorage.getItem('token')); // Replace with actual token
+  }, []);
 
   const handleUploadClick = () => {
     setIsModalOpen(true);
@@ -70,13 +77,33 @@ export default function AttendanceUpload() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!file) {
       alert("Please select a file to upload.");
       return;
     }
-    console.log("Uploading file:", file);
-    closeModal();
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('month', selectedMonth);
+    formData.append('year', selectedYear);
+
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/upload`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      console.log("File uploaded successfully");
+      closeModal();
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
   };
 
   const handleEmployeeClick = (employee) => {
@@ -209,8 +236,8 @@ export default function AttendanceUpload() {
               </div>
             </CardContent>
             <div className="flex justify-end p-4">
-              <Button onClick={closeModal} variant="outline" className="mr-2">Close</Button>
-              <Button onClick={handleSubmit}>Submit</Button>
+              <Button variant="ghost" onClick={closeModal}>Cancel</Button>
+              <Button onClick={handleSubmit} disabled={!file} className="ml-2">Upload</Button>
             </div>
           </Card>
         </div>
