@@ -72,22 +72,7 @@ const Header = () => {
               <ShieldCheck className="h-5 w-5" />
               Quality Check
             </Link>
-            <Link
-              to="/teamlead/attendance"
-              className={selected === "/teamlead/attendance" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/teamlead/attendance")}
-            >
-              <CalendarCheck  className="h-5 w-5" />
-              Attendance
-            </Link>
-            <Link
-              to="/teamlead/analytics"
-              className={selected === "/teamlead/analytics" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/teamlead/analytics")}
-            >
-              <LineChart className="h-5 w-5" />
-              Analytics
-            </Link>
+            
           </nav>
         </SheetContent>
       </Sheet>

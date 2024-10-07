@@ -1,4 +1,3 @@
-import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from '@/components/ui/progress' 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

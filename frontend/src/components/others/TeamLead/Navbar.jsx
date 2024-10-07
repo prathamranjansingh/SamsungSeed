@@ -53,22 +53,7 @@ const Navbar = () => {
               <ShieldCheck className="h-4 w-4" />
               Quality Check
             </Link>
-            <Link
-              to="/teamlead/attendance"
-              className={selected === "/teamlead/attendance" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/teamlead/attendance")}
-            >
-              <CalendarCheck  className="h-4 w-4" />
-              Attendance
-            </Link>
-            <Link
-              to="/teamlead/analytics"
-              className={selected === "/teamlead/analytics" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/teamlead/analytics")}
-            >
-              <LineChart className="h-4 w-4" />
-              Analytics
-            </Link>
+            
             
           </nav>
         </div>
