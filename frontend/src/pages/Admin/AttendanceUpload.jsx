@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, FileSpreadsheet, ChevronDown } from 'lucide-react';
+import { Upload, FileSpreadsheet } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -20,22 +21,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const employeesData = [
-  {
-    id: "01",
-    name: "Chandra",
-    day1: "Absent", day2: "Absent", day3: "Present", day4: "Absent", day5: "Absent",
-    day6: "Present", day7: "Present", day8: "Present", day9: "Present", day10: "Absent",
-    day11: "Absent", day12: "Absent", day13: "Present", day14: "Present", day15: "Present",
-    day16: "Present", day17: "Present", day18: "Absent", day19: "Absent", day20: "Present",
-    day21: "Present", day22: "Present", day23: "Present", day24: "Absent", day25: "Absent",
-    day26: "Absent", day27: "Present", day28: "Present", day29: "Present", day30: "Present",
-    day31: "Absent",
-    total_present: 18,
-    total_absent: 13,
-  },
-];
-
 const months = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
@@ -50,7 +35,14 @@ export default function AttendanceUpload() {
   const [fileName, setFileName] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(months[new Date().getMonth()]);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [employeesData, setEmployeesData] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [token, setToken] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+
+  useEffect(() => {
+    setToken(localStorage.getItem('token'));
+  }, []);
 
   const handleUploadClick = () => {
     setIsModalOpen(true);
@@ -70,17 +62,73 @@ export default function AttendanceUpload() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!file) {
       alert("Please select a file to upload.");
       return;
     }
-    console.log("Uploading file:", file);
-    closeModal();
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('month', selectedMonth);
+    formData.append('year', selectedYear);
+
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/upload`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      console.log("File uploaded successfully");
+      closeModal();
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
   };
 
   const handleEmployeeClick = (employee) => {
     setSelectedEmployee(employee);
+  };
+
+  const fetchAttendanceDetails = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/attendance`, {
+        params: { month: months.indexOf(selectedMonth) + 1, year: selectedYear },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      setEmployeesData(response.data);
+    } catch (error) {
+      console.error("Error fetching attendance details:", error);
+    }
+  };
+
+  const sortedEmployeesData = [...employeesData].sort((a, b) => {
+    if (sortConfig.key === 'present') {
+      return sortConfig.direction === 'ascending' 
+        ? a.total_present - b.total_present 
+        : b.total_present - a.total_present;
+    }
+    if (sortConfig.key === 'absent') {
+      return sortConfig.direction === 'ascending' 
+        ? a.total_absent - b.total_absent 
+        : b.total_absent - a.total_absent;
+    }
+    return 0; // No sorting if key is null
+  });
+
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
   };
 
   return (
@@ -112,9 +160,8 @@ export default function AttendanceUpload() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={handleUploadClick}>
-            Upload Attendance
-          </Button>
+          <Button onClick={fetchAttendanceDetails}>Search</Button>
+          <Button onClick={handleUploadClick}>Upload Attendance</Button>
         </div>
       </div>
 
@@ -127,12 +174,20 @@ export default function AttendanceUpload() {
             <TableHeader>
               <TableRow>
                 <TableHead>Employee Name</TableHead>
-                <TableHead>Total Present</TableHead>
-                <TableHead>Total Absent</TableHead>
+                <TableHead>
+                  <button onClick={() => handleSort('present')}>
+                    Total Present {sortConfig.key === 'present' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button onClick={() => handleSort('absent')}>
+                    Total Absent {sortConfig.key === 'absent' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                  </button>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employeesData.map((employee) => (
+              {sortedEmployeesData.map((employee) => (
                 <TableRow key={employee.id}>
                   <TableCell>
                     <Dialog>
@@ -196,22 +251,23 @@ export default function AttendanceUpload() {
                   onClick={(e) => { e.target.value = null }}
                 />
                 {fileName ? (
-                  <div className="flex items-center justify-between w-full p-4 border border-gray-300 rounded-lg">
-                    <p className="text-sm text-gray-700 dark:text-gray-300">{fileName}</p>
-                    <Button onClick={() => document.getElementById('dropzone-file').click()} variant="outline">Change File</Button>
+                  <div className="flex items-center justify-center w-full p-4 border border-dashed border-gray-300">
+                    <FileSpreadsheet className="mr-2" />
+                    {fileName}
                   </div>
                 ) : (
-                  <Button onClick={() => document.getElementById('dropzone-file').click()} variant="outline" className="w-full h-64 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                    <FileSpreadsheet className="w-10 h-10 mb-3 text-gray-400" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                  </Button>
+                  <label
+                    htmlFor="dropzone-file"
+                    className="flex items-center justify-center w-full p-4 border border-dashed border-gray-300 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="mr-2" />
+                    <span className="text-gray-600">Drag and drop your file here or click to upload</span>
+                  </label>
                 )}
+                <Button onClick={handleSubmit} className="mt-4 w-full">Upload</Button>
+                <Button onClick={closeModal} variant="secondary" className="mt-2 w-full">Cancel</Button>
               </div>
             </CardContent>
-            <div className="flex justify-end p-4">
-              <Button onClick={closeModal} variant="outline" className="mr-2">Close</Button>
-              <Button onClick={handleSubmit}>Submit</Button>
-            </div>
           </Card>
         </div>
       )}
