@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { router } from './routes/route.js';
+import  session  from 'express-session';
 dotenv.config();
 
 import postgres from 'postgres';
@@ -13,6 +14,11 @@ export const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
+app.use(session({
+    secret: 'rwrfhihr87433br98',
+    resave: false,
+    saveUninitialized: false
+  }));
 
 const db = postgres({
     host: PGHOST,
