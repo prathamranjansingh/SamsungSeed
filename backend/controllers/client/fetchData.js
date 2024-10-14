@@ -6,9 +6,9 @@ export async function fetchData(req, res) {
   try {
     // Access session data
     const user = req.session.user;
-    
     // Check if the user exists in the session
     if (!user || !user.email) {
+      
       return res.status(401).send('Unauthorized');
     }
 

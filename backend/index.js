@@ -11,9 +11,13 @@ import postgres from 'postgres';
 let { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID } = process.env;
 
 export const app = express();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+    origin: true, // Allow all origins. For production, specify allowed origins here as an array.
+    credentials: true // Allow credentials to be included in requests (e.g., cookies, authorization headers)
+}));
 app.use(session({
     secret: 'rwrfhihr87433br98',
     resave: false,

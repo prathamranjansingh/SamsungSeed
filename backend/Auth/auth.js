@@ -44,7 +44,7 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email format"),
 });
 
-
+// User login
 async function login(req, res) {
   try {
     const { email, password } = loginSchema.parse(req.body);
@@ -92,6 +92,7 @@ async function login(req, res) {
       }
     }
 
+    // If no user is found or password doesn't match
     return res.status(401).send("Invalid credentials");
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -101,7 +102,6 @@ async function login(req, res) {
     return res.status(500).send("Database error");
   }
 }
-
 
 // Reset password
 async function resetPassword(req, res) {
