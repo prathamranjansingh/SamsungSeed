@@ -12,7 +12,6 @@ export async function empAdd(req, res) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     const { content } = req.body; 
-    console.log("content is:", content)
     if (!content) {
       return res.status(400).send('Content cannot be empty');
     }
