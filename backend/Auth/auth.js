@@ -2,7 +2,6 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { db } from "../index.js";
-
 import nodemailer from "nodemailer";
 import { z } from "zod";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -23,12 +22,12 @@ if (
 
 const transporter = nodemailer.createTransport({
   secure: true,
-  host: 'smtp.gmail.com',
+  host: "smtp.gmail.com",
   port: 465,
   auth: {
-      user: process.env.EMAIL_USER, // Consider using environment variables for sensitive info
-      pass: process.env.EMAIL_PASS // Consider using environment variables for sensitive info
-  }
+    user: process.env.EMAIL_USER, // Consider using environment variables for sensitive info
+    pass: process.env.EMAIL_PASS, // Consider using environment variables for sensitive info
+  },
 });
 
 const loginSchema = z.object({
@@ -44,11 +43,6 @@ const resetPasswordSchema = z.object({
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email format"),
 });
-
-
-
-
-
 
 // User login
 async function login(req, res) {
@@ -79,6 +73,7 @@ async function login(req, res) {
           { id: user.email, role: "employee" },
           process.env.JWT_SECRET
         );
+        req.session.user = { email: user.email };
         return res.status(200).json({ success: true, token, role: "employee" });
       }
     }
@@ -93,12 +88,11 @@ async function login(req, res) {
           { id: user.email, role: "team_lead" },
           process.env.JWT_SECRET
         );
-        return res
-          .status(200)
-          .json({ success: true, token, role: "team_lead" });
+        return res.status(200).json({ success: true, token, role: "team_lead" });
       }
     }
 
+    // If no user is found or password doesn't match
     return res.status(401).send("Invalid credentials");
   } catch (err) {
     if (err instanceof z.ZodError) {

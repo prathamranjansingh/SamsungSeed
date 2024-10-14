@@ -21,7 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import axios from 'axios'; // Import Axios
+import { Loader } from "lucide-react"; // Import Lucide React icon
+import axios from 'axios';
 
 const Employee = () => {
   const [employees, setEmployees] = useState([]);
@@ -31,6 +32,7 @@ const Employee = () => {
     name: "",
     email: "",
   });
+  const [loading, setLoading] = useState(false); // Add loading state
   const { toast } = useToast();
 
   const itemsPerPage = 10;
@@ -43,7 +45,7 @@ const Employee = () => {
     const fetchEmployees = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/employees`);
-        setEmployees(response.data); // Set the employee data to state
+        setEmployees(response.data);
       } catch (error) {
         console.error("Error fetching employees:", error);
         toast({
@@ -55,7 +57,7 @@ const Employee = () => {
     };
 
     fetchEmployees();
-  }, []); // Fetch employees on component mount
+  }, []);
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -72,16 +74,11 @@ const Employee = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/register-employee`, newEmployee);
       setEmployees((prev) => [...prev, { name: response.data.name, email: response.data.email }]);
-
-      // Reset the newEmployee state
-      setNewEmployee({
-        name: "",
-        email: "",
-      });
-
+      setNewEmployee({ name: "", email: "" });
       setIsDialogOpen(false);
       toast({
         title: "Employee Added",
@@ -94,6 +91,8 @@ const Employee = () => {
         description: "Failed to add the employee. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false); // Set loading back to false
     }
   };
 
@@ -139,8 +138,10 @@ const Employee = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="ml-auto">
-                Create Employee
+              <Button type="submit" className="ml-auto" disabled={loading}>
+                {loading ? (
+                  <Loader className="animate-spin mr-2" size={16} />
+                ) : "Create Employee"}
               </Button>
             </form>
           </DialogContent>
