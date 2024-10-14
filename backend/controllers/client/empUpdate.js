@@ -1,22 +1,31 @@
-import { db} from '../../index.js';
+import jwt from 'jsonwebtoken'; // Ensure you have this imported
+import { db } from '../../index.js'; // Ensure db is configured properly
 
-// Function to fetch data from PostgreSQL
+
 export async function empAdd(req, res) {
   try {
-    // Access session data
-    const user = req.session.user;
-    const {content}=req.body;
-     // const contentString = JSON.stringify(content, null, 2);
-    // Parameterized query to fetch name from the employee table
-     await db `UPDATE employee SET skill=${content}  WHERE email=${user.email}`;
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).send('No token provided');
+    }
 
-  res.send("Updated...")
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const { content } = req.body; 
+    console.log("content is:", content)
+    if (!content) {
+      return res.status(400).send('Content cannot be empty');
+    }
 
+      const result = await db`UPDATE employee SET skill = ${content} WHERE email = ${decoded.id}`; // Use tagged template literals
+
+    if (result.count === 0) {
+      return res.status(404).send('Employee not found');
+    }
+
+    res.send("Skill updated successfully");
   } catch (err) {
-    // Handle any errors
-    console.error('Error fetching data:', err);
+    console.error('Error updating skill:', err);
     res.status(500).send('Server error');
   }
-};
-
-
+}

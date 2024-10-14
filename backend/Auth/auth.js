@@ -74,6 +74,7 @@ async function login(req, res) {
           process.env.JWT_SECRET
         );
         req.session.user = { email: user.email };
+        console.log(email)
         return res.status(200).json({ success: true, token, role: "employee" });
       }
     }
