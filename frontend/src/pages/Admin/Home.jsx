@@ -67,7 +67,7 @@ const Home = () => {
           </Link>
         </Card>
         <Card x-chunk="dashboard-01-chunk-2">
-          <Link to="/team">
+          <Link to="/admin/team">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Teams</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />

@@ -9,7 +9,7 @@ import { empAdd } from '../controllers/client/empUpdate.js';
 import { addTeamMember } from '../controllers/teams/addTeamMembers.js';
 import { createTeam } from '../controllers/teams/createTeam.js';
 import { createProject } from '../controllers/projects/createProject.js';
-
+import  {getTeams}  from '../controllers/teams/getTeams.js';
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 router.post('/login', login);
@@ -24,5 +24,5 @@ router.post('/emp-add',empAdd);
 router.post('/add-team-member', addTeamMember);
 router.post('/team-create', createTeam);
 router.post('/project-create', createProject);
-
+router.get('/get-team', getTeams)
 export { router };

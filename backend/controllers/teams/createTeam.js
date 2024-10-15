@@ -4,8 +4,11 @@ import { db } from "../../index.js";
 export async function createTeam(req, res) {
     try{
         const {team_name, team_lead_id, members} = req.body;
-        //Insert the team into the Teams table with members as array of ids
+        
         const team = await db`INSERT INTO Teams (team_name, team_lead_id, team_members) VALUES (${team_name}, ${team_lead_id}, ${members}) RETURNING *`;
+
+        const teamLead = await db`UPDATE Employee SET role = 'teamlead' WHERE id = ${team_lead_id}`;
+        console.log(team)
         return res.status(200).send(team);
 
     } catch (err) {
