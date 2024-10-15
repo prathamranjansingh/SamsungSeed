@@ -48,7 +48,7 @@ export function forgotPassword(req, res) {
         return res.status(400).send("Email is required");
     }
 
-    db`SELECT * FROM ADMIN WHERE email = ${email}`
+    db`SELECT * FROM Employee WHERE email = ${email}`
         .then(result => {
             if (result.length === 0) {
                 return res.status(404).send("Email not found");

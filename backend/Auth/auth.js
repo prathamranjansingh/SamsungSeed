@@ -74,8 +74,7 @@ async function login(req, res) {
           process.env.JWT_SECRET
         );
         req.session.user = { email: user.email };
-        console.log(email)
-        return res.status(200).json({ success: true, token, role: "employee" });
+        return res.status(200).json({ success: true, token, role: "employee"});
       }
     }
 
@@ -89,11 +88,12 @@ async function login(req, res) {
           { id: user.email, role: "team_lead" },
           process.env.JWT_SECRET
         );
-        return res.status(200).json({ success: true, token, role: "team_lead" });
+        return res
+          .status(200)
+          .json({ success: true, token, role: "team_lead" });
       }
     }
 
-    // If no user is found or password doesn't match
     return res.status(401).send("Invalid credentials");
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -117,7 +117,7 @@ async function resetPassword(req, res) {
       return res.status(400).send("Passwords don't match");
     }
 
-    const result = await db`SELECT * FROM Admin WHERE email = ${id}`;
+    const result = await db`SELECT * FROM Employee WHERE email = ${id}`;
     if (result.length === 0) {
       return res.status(404).send("User not found");
     }
@@ -129,7 +129,7 @@ async function resetPassword(req, res) {
     jwt.verify(token, secret);
 
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-    await db`UPDATE Admin SET password = ${hashedPassword} WHERE email = ${id}`;
+    await db`UPDATE Employee SET password = ${hashedPassword} WHERE email = ${id}`;
     return res.send("Password has been updated");
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -145,7 +145,7 @@ async function forgotPassword(req, res) {
   try {
     const { email } = forgotPasswordSchema.parse(req.body);
 
-    const result = await db`SELECT * FROM Admin WHERE email = ${email}`;
+    const result = await db`SELECT * FROM Employee WHERE email = ${email}`;
     if (result.length === 0) {
       return res.status(404).send("Email not found");
     }
