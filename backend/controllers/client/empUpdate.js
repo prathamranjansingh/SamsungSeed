@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken'; // Ensure you have this imported
-import { db } from '../../index.js'; // Ensure db is configured properly
+import jwt from 'jsonwebtoken'; 
+import { db } from '../../index.js'; 
 
 
 export async function empAdd(req, res) {

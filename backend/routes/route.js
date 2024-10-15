@@ -6,7 +6,6 @@ import multer from 'multer';
 import { handleAttendanceUpload, handleGetAttendance } from '../controllers/attendance.js';
 import { fetchData } from '../controllers/client/fetchData.js';
 import { empAdd } from '../controllers/client/empUpdate.js';
-import { addTeamMember } from '../controllers/teams/addTeamMembers.js';
 import { createTeam } from '../controllers/teams/createTeam.js';
 import { createProject } from '../controllers/projects/createProject.js';
 import  {getTeams}  from '../controllers/teams/getTeams.js';
@@ -21,7 +20,6 @@ router.post('/upload', upload.single('file'), handleAttendanceUpload);
 router.get('/attendance', handleGetAttendance);
 router.get('/emp-fetch',fetchData);
 router.post('/emp-add',empAdd);
-router.post('/add-team-member', addTeamMember);
 router.post('/team-create', createTeam);
 router.post('/project-create', createProject);
 router.get('/get-team', getTeams)
