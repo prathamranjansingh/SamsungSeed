@@ -1,27 +1,25 @@
 
-import { db, app } from '../../index.js';
+import { db } from '../../index.js';
 
-import jwt from 'jsonwebtoken';
-
+// Function to fetch data from PostgreSQL
 export async function fetchData(req, res) {
   try {
-    // Get the token from the request headers
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).send('No token provided');
+    // Access session data
+    const user = req.session.user;
+    
+    // Check if the user exists in the session
+    if (!user || !user.email) {
+      return res.status(401).send('Unauthorized');
     }
 
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // Use the email from the decoded token
-    const result = await db`SELECT name, email, id, role, skill, experience FROM employee WHERE email = ${decoded.id}`;
-    res.send(result);
+    // Parameterized query to fetch name from the employee table
+    const result = await db `SELECT name,email,id,role,skill,experience FROM employee WHERE email=${user.email}`;
+
+  res.send(result)
 
   } catch (err) {
+    // Handle any errors
     console.error('Error fetching data:', err);
-    if (err.name === 'JsonWebTokenError') {
-      return res.status(401).send('Invalid token');
-    }
     res.status(500).send('Server error');
   }
-}
+};
