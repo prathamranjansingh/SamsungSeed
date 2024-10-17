@@ -78,19 +78,18 @@ async function login(req, res) {
       }
     }
 
-    // Check if user exists in Team Lead table
     results = await db`SELECT * FROM TeamLead WHERE email = ${email}`;
     if (results.length > 0) {
       const user = results[0];
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
         const token = jwt.sign(
-          { id: user.email, role: "team_lead" },
+          { id: user.email, role: "teamlead" },
           process.env.JWT_SECRET
         );
         return res
           .status(200)
-          .json({ success: true, token, role: "team_lead" });
+          .json({ success: true, token, role: "teamlead" });
       }
     }
 
