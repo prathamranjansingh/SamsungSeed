@@ -7,7 +7,7 @@ import { handleAttendanceUpload, handleGetAttendance } from '../controllers/atte
 import { fetchData } from '../controllers/client/fetchData.js';
 import { empAdd } from '../controllers/client/empUpdate.js';
 import { createTeam } from '../controllers/teams/createTeam.js';
-import { createProject } from '../controllers/projects/createProject.js';
+import { createProject, getAllProjects } from '../controllers/projects/createProject.js';
 import { deleteProject } from '../controllers/projects/deleteProject.js';
 import { deleteTeam } from '../controllers/teams/deleteTeam.js';
 import { getEmpProjects } from '../controllers/projects/empProjects.js';
@@ -37,6 +37,6 @@ router.post('/get-leaddetails', countTeamLeadStats);
 router.post('/getTeamLead', getTeamLead);
 router.post('/edit-project', editDueDate);
 router.get('/get-team', getTeams)
-
+router.get('/get-Allprojects', getAllProjects);
 
 export { router };

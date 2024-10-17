@@ -1,88 +1,144 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
-import { FolderIcon, FileIcon, MoreVerticalIcon, PlusIcon, UploadIcon, CalendarIcon } from "lucide-react";
-import { Calendar } from "../../components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover"
+import { FolderIcon, FileIcon, MoreHorizontalIcon, PlusIcon, UploadIcon, CalendarIcon } from "lucide-react";
+import { Calendar } from "../../components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import teamData from "@/assets/demoData/teamData.json";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
 export default function ProjectsPage() {
   const { toast } = useToast();
 
-  const [folders, setFolders] = useState([
-    { name: "Employee Records", files: 2, team: "Team A", dueDate: new Date("2024-12-31") },
-    { name: "Training Documents", files: 1, team: "Team B", dueDate: new Date("2024-11-15") },
-    { name: "Performance Reviews", files: 2, team: "Team C", dueDate: new Date("2024-10-30") },
-  ]);
-
-  const [files, setFiles] = useState([
-    { name: "Team_Roster.docx", size: "245 KB", date: "Oct 27, 2023", folder: "Employee Records" },
-    { name: "Training_Policies.pdf", size: "1.2 MB", date: "Oct 13, 2023", folder: "Training Documents" },
-    { name: "Events_Calendar.pdf", size: "2.8 MB", date: "Sep 29, 2023", folder: "Employee Records" },
-    { name: "Appraisals_2023.zip", size: "5.8 MB", date: "May 10, 2023", folder: "Performance Reviews" },
-    { name: "Employee_Contracts.docx", size: "480 KB", date: "Dec 13, 2022", folder: "Performance Reviews" },
-  ]);
-
+  const [folders, setFolders] = useState([]);
   const [newFolderName, setNewFolderName] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState("");
   const [dueDate, setDueDate] = useState(null);
-
+  const [teams, setTeams] = useState([]);
   const fileInputRef = useRef(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  
+  // Fetch Projects
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-Allprojects`);
+        setFolders(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast({
+          title: "Error fetching data",
+          description: "Could not fetch folders and files.",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchData();
+  }, [toast]);
 
-  const handleFileUpload = (event) => {
-    const filesArray = Array.from(event.target.files);
-    if (filesArray.length > 0 && selectedFolder) {
-      const newFiles = filesArray.map(file => ({
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(1)} KB`,
-        date: new Date().toLocaleDateString(),
-        folder: selectedFolder,
-      }));
-      
-      setFiles(prevFiles => [...newFiles, ...prevFiles]);
-      setFolders(prevFolders => prevFolders.map(folder =>
-        folder.name === selectedFolder ? { ...folder, files: folder.files + filesArray.length } : folder
-      ));
-      
-      toast({
-        title: "Files uploaded successfully",
-        description: `${filesArray.length} files have been added to ${selectedFolder}.`,
-      });
-    } else if (!selectedFolder) {
-      toast({
-        title: "No folder selected",
-        description: "Please select a folder before uploading files.",
-        variant: "destructive",
-      });
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  // Fetch Teams
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-team`);
+        setTeams(response.data);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+        toast({
+          title: "Error fetching teams",
+          description: "Could not fetch teams.",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchTeams();
+  }, [toast]);
 
-  const handleAddFolder = () => {
+  // Create Project
+  const handleCreateProject = async () => {
     if (newFolderName && selectedTeam && dueDate) {
-      setFolders([...folders, { name: newFolderName, files: 0, team: selectedTeam, dueDate }]);
-      setNewFolderName("");
-      setSelectedTeam("");
-      setDueDate(null);
-      toast({
-        title: "Project created",
-        description: `${newFolderName} has been added for team ${selectedTeam} with due date ${format(dueDate, 'PP')}.`,
-      });
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/project-create`, {
+          project_name: newFolderName,
+          team_name: selectedTeam,
+          due_date: dueDate.toISOString().split("T")[0],
+        });
+        const resp = response.data[0];
+        setFolders(prev => [...prev, resp]);
+
+        setNewFolderName("");
+        setSelectedTeam("");
+        setDueDate(null);
+        toast({
+          title: "Project created",
+          description: `${newFolderName} has been added for team ${selectedTeam} with due date ${format(dueDate, 'PP')}.`,
+        });
+      } catch (error) {
+        console.error("Error creating project:", error);
+        toast({
+          title: "Error",
+          description: "There was an error creating the project.",
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Missing Information",
         description: "Please provide a project name, select a team, and set a due date.",
         variant: "destructive",
       });
+    }
+  };
+
+  // Format Dates
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No date set';
+    try {
+      const date = parseISO(dateString);
+      return isValid(date) ? format(date, 'MMMM d, yyyy') : 'Invalid Date';
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      return 'Invalid Date';
+    }
+  };
+
+  // Open Delete Modal
+  const openDeleteModal = (project_id) => {
+    setProjectToDelete(project_id);
+    setIsDeleteModalOpen(true);
+  };
+  
+  // Close Delete Modal
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setProjectToDelete(null);
+  };
+  
+  // Delete Project
+  const handleDeleteProject = async () => {
+    if (projectToDelete) {
+      try {
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/delete-project`, { project_id: projectToDelete });
+        setFolders(folders.filter((folder) => folder.id !== projectToDelete));
+        toast({
+          title: "Project deleted",
+          description: "The project has been successfully deleted.",
+        });
+        closeDeleteModal();
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        toast({
+          title: "Error",
+          description: "There was an error deleting the project.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -117,8 +173,8 @@ export default function ProjectsPage() {
               className="mt-2 border rounded-lg p-2"
             >
               <option value="" disabled>Select a Team</option>
-              {teamData.teams.map((team) => (
-                <option key={team.id} value={team.name}>{team.name}</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.team_name}>{team.team_name}</option>
               ))}
             </select>
             <Popover>
@@ -141,101 +197,77 @@ export default function ProjectsPage() {
                 />
               </PopoverContent>
             </Popover>
-            <Button onClick={handleAddFolder} className="mt-4">Create Project</Button>
+            <Button onClick={handleCreateProject} className="mt-4">Create Project</Button>
           </DialogContent>
         </Dialog>
         {folders.map((folder) => (
           <div
-            key={folder.name}
-            className={`border rounded-lg p-4 flex flex-col items-center justify-center space-y-2 cursor-pointer ${selectedFolder === folder.name ? "bg-gray-100 border-black" : "hover:bg-gray-50"}`}
-            onClick={() => setSelectedFolder(folder.name)}
+            key={folder.id} // Use folder.id as the key for unique identification
+            className={`border rounded-lg p-4 flex flex-col items-center justify-center space-y-2 cursor-pointer ${selectedFolder?.id === folder.id ? "bg-gray-100 border-black" : "hover:bg-gray-50"}`}
+            onClick={() => setSelectedFolder(folder)}
           >
             <FolderIcon className="w-12 h-12 text-black" />
-            <span className="text-sm font-medium">{folder.name}</span>
-            <span className="text-xs text-gray-500">{folder.team}</span>
-            <span className="text-xs text-gray-500">Due: {format(folder.dueDate, 'PP')}</span>
-            <div className="flex -space-x-2">
-             
-            </div>
-            <span className="text-xs text-gray-500">{folder.files} files</span>
+            <span className="text-sm font-medium">{folder.project_name}</span>
+            <span className="text-xs text-gray-500">{folder.team_name}</span>
+            <span className="text-xs text-gray-500">Due: {formatDate(folder.due_date)}</span>
+            <span className="text-xs text-gray-500 ">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <MoreHorizontalIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => openDeleteModal(folder.id)}>
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </span>
           </div>
         ))}
       </div>
-
-      {/* Files */}
       <h2 className="text-lg font-semibold mb-4">Files</h2>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>File Size</TableHead>
-              <TableHead>Last Modified</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead></TableHead>
+              <TableHead>Members Name</TableHead>
+              <TableHead>Date</TableHead>
+
             </TableRow>
           </TableHeader>
           <TableBody>
-            {files
-              .filter((file) => !selectedFolder || file.folder === selectedFolder)
-              .map((file) => (
-                <TableRow key={file.name}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <FileIcon className="text-gray-400" />
-                      <span>{file.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{file.folder}</TableCell>
-                  <TableCell>{file.size}</TableCell>
-                  <TableCell>{file.date}</TableCell>
-                  <TableCell>
-                    {folders.find(folder => folder.name === file.folder)?.dueDate
-                      ? format(folders.find(folder => folder.name === file.folder).dueDate, 'PP')
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                          <MoreVerticalIcon className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {selectedFolder && selectedFolder.team_members && selectedFolder.team_members.map((member, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <FileIcon className="mr-2 h-4 w-4 inline" />
+                  {selectedFolder.project_name}
+                </TableCell>
+                <TableCell>{member}</TableCell>
+                <TableCell>{formatDate(selectedFolder.due_date)}</TableCell>
+               
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
-      </div>
-
-      <div className="mt-8 border-2 border-dashed rounded-lg p-8 text-center">
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileUpload}
-          className="hidden"
-          ref={fileInputRef}
-        />
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={!selectedFolder}
-        >
-          <UploadIcon className="mr-2 h-4 w-4" /> Upload New Images
-        </Button>
-        <p className="mt-2 text-sm text-gray-500">
-          {selectedFolder
-            ? `Drag and drop image files or Browse to upload to ${selectedFolder}`
-            : "Select a folder to upload files"}
-        </p>
-      </div>
+        </div>
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <Dialog open={isDeleteModalOpen} onOpenChange={closeDeleteModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+            </DialogHeader>
+            <p>Are you sure you want to delete this project? This action cannot be undone.</p>
+            <div className="flex justify-end mt-4">
+            <Button variant="destructive" onClick={handleDeleteProject} className="ml-2">Delete</Button>
+            <Button  variant="outline" onClick={closeDeleteModal} >Cancel</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
