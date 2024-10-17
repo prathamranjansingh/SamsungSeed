@@ -8,7 +8,7 @@ export async function createTeam(req, res) {
         const team = await db`INSERT INTO Teams (team_name, team_lead_id, team_members) VALUES (${team_name}, ${team_lead_id}, ${members}) RETURNING *`;
 
         const teamLead = await db`UPDATE Employee SET role = 'teamlead' WHERE id = ${team_lead_id}`;
-        console.log(team)
+
         return res.status(200).send(team);
 
     } catch (err) {
@@ -17,7 +17,7 @@ export async function createTeam(req, res) {
     }
 }
 
-//db query
+//db query to get team members details
 // SELECT e.*
 // FROM teams t
 // JOIN LATERAL UNNEST(t.team_members) AS member_id ON TRUE
