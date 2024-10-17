@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -22,59 +22,45 @@ export default function ProjectsPage() {
   const [teams, setTeams] = useState([]);
   const fileInputRef = useRef(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditDueDateModalOpen, setIsEditDueDateModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
-  
-  // Fetch Projects
+  const [projectToEdit, setProjectToEdit] = useState(null);
+  const [newDueDate, setNewDueDate] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [projectsResponse, teamsResponse] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-Allprojects`),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-team`)
+      ]);
+      setFolders(projectsResponse.data);
+      setTeams(teamsResponse.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast({
+        title: "Error fetching data",
+        description: "Could not fetch projects and teams.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-Allprojects`);
-        setFolders(response.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "Error fetching data",
-          description: "Could not fetch folders and files.",
-          variant: "destructive",
-        });
-      }
-    };
     fetchData();
-  }, [toast]);
+  }, [fetchData]);
 
-  // Fetch Teams
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-team`);
-        setTeams(response.data);
-      } catch (error) {
-        console.error("Error fetching teams:", error);
-        toast({
-          title: "Error fetching teams",
-          description: "Could not fetch teams.",
-          variant: "destructive",
-        });
-      }
-    };
-    fetchTeams();
-  }, [toast]);
-
-  // Create Project
   const handleCreateProject = async () => {
     if (newFolderName && selectedTeam && dueDate) {
       try {
+        const formattedDueDate = format(dueDate, 'yyyy-MM-dd');
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/project-create`, {
           project_name: newFolderName,
           team_name: selectedTeam,
-          due_date: dueDate.toISOString().split("T")[0],
+          due_date: formattedDueDate,
         });
-        const resp = response.data[0];
-        setFolders(prev => [...prev, resp]);
-
-        setNewFolderName("");
-        setSelectedTeam("");
-        setDueDate(null);
+        const newProject = response.data[0];
+        setFolders(prev => [...prev, newProject]);
+        resetForm();
         toast({
           title: "Project created",
           description: `${newFolderName} has been added for team ${selectedTeam} with due date ${format(dueDate, 'PP')}.`,
@@ -96,31 +82,28 @@ export default function ProjectsPage() {
     }
   };
 
-  // Format Dates
-  const formatDate = (dateString) => {
-    if (!dateString) return 'No date set';
-    try {
-      const date = parseISO(dateString);
-      return isValid(date) ? format(date, 'MMMM d, yyyy') : 'Invalid Date';
-    } catch (error) {
-      console.error("Error parsing date:", error);
-      return 'Invalid Date';
-    }
+  const resetForm = () => {
+    setNewFolderName("");
+    setSelectedTeam("");
+    setDueDate(null);
   };
 
-  // Open Delete Modal
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No date set';
+    const date = parseISO(dateString);
+    return isValid(date) ? format(date, 'MMMM d, yyyy') : 'Invalid Date';
+  };
+
   const openDeleteModal = (project_id) => {
     setProjectToDelete(project_id);
     setIsDeleteModalOpen(true);
   };
-  
-  // Close Delete Modal
+
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setProjectToDelete(null);
   };
-  
-  // Delete Project
+
   const handleDeleteProject = async () => {
     if (projectToDelete) {
       try {
@@ -136,6 +119,44 @@ export default function ProjectsPage() {
         toast({
           title: "Error",
           description: "There was an error deleting the project.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const openEditDueDateModal = (project) => {
+    setProjectToEdit(project);
+    setNewDueDate(parseISO(project.due_date));
+    setIsEditDueDateModalOpen(true);
+  };
+
+  const closeEditDueDateModal = () => {
+    setIsEditDueDateModalOpen(false);
+    setProjectToEdit(null);
+    setNewDueDate(null);
+  };
+
+  const handleEditDueDate = async () => {
+    if (projectToEdit && newDueDate) {
+      try {
+        const formattedNewDueDate = format(newDueDate, 'yyyy-MM-dd');
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/edit-project`, {
+          id: projectToEdit.id,
+          date: formattedNewDueDate,
+        });
+        const updatedProject = response.data[0];
+        setFolders(prev => prev.map(folder => folder.id === updatedProject.id ? updatedProject : folder));
+        toast({
+          title: "Due date updated",
+          description: `The due date for ${projectToEdit.project_name} has been updated to ${format(newDueDate, 'PP')}.`,
+        });
+        closeEditDueDateModal();
+      } catch (error) {
+        console.error("Error updating due date:", error);
+        toast({
+          title: "Error",
+          description: "There was an error updating the due date.",
           variant: "destructive",
         });
       }
@@ -202,7 +223,7 @@ export default function ProjectsPage() {
         </Dialog>
         {folders.map((folder) => (
           <div
-            key={folder.id} // Use folder.id as the key for unique identification
+            key={folder.id}
             className={`border rounded-lg p-4 flex flex-col items-center justify-center space-y-2 cursor-pointer ${selectedFolder?.id === folder.id ? "bg-gray-100 border-black" : "hover:bg-gray-50"}`}
             onClick={() => setSelectedFolder(folder)}
           >
@@ -210,23 +231,32 @@ export default function ProjectsPage() {
             <span className="text-sm font-medium">{folder.project_name}</span>
             <span className="text-xs text-gray-500">{folder.team_name}</span>
             <span className="text-xs text-gray-500">Due: {formatDate(folder.due_date)}</span>
-            <span className="text-xs text-gray-500 ">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <MoreHorizontalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => openDeleteModal(folder.id)}>
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" onClick={(e) => e.stopPropagation()}>
+                  <MoreHorizontalIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  openEditDueDateModal(folder);
+                }}>
+                  Edit Due Date
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  openDeleteModal(folder.id);
+                }}>
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         ))}
       </div>
+
+      {/* Files */}
       <h2 className="text-lg font-semibold mb-4">Files</h2>
       <div className="overflow-x-auto">
         <Table>
@@ -235,7 +265,6 @@ export default function ProjectsPage() {
               <TableHead>Name</TableHead>
               <TableHead>Members Name</TableHead>
               <TableHead>Date</TableHead>
-
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -247,27 +276,57 @@ export default function ProjectsPage() {
                 </TableCell>
                 <TableCell>{member}</TableCell>
                 <TableCell>{formatDate(selectedFolder.due_date)}</TableCell>
-               
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        </div>
+      </div>
+
       {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <Dialog open={isDeleteModalOpen} onOpenChange={closeDeleteModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-            </DialogHeader>
-            <p>Are you sure you want to delete this project? This action cannot be undone.</p>
-            <div className="flex justify-end mt-4">
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this project? This action cannot be undone.</p>
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={closeDeleteModal}>Cancel</Button>
             <Button variant="destructive" onClick={handleDeleteProject} className="ml-2">Delete</Button>
-            <Button  variant="outline" onClick={closeDeleteModal} >Cancel</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Due Date Modal */}
+      <Dialog open={isEditDueDateModalOpen} onOpenChange={setIsEditDueDateModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Due Date</DialogTitle>
+          </DialogHeader>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={`w-full justify-start text-left font-normal ${!newDueDate && "text-muted-foreground"}`}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {newDueDate ? format(newDueDate, 'PP') : <span>Pick a new due date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={newDueDate}
+                onSelect={setNewDueDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={closeEditDueDateModal}>Cancel</Button>
+            <Button onClick={handleEditDueDate} className="ml-2">Update Due Date</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
