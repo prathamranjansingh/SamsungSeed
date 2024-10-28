@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/pop
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid, parseISO } from "date-fns";
 
-export default function ProjectsPage() {
+export default function TasksPage() {
   const { toast } = useToast();
 
   const [folders, setFolders] = useState([]);

@@ -17,10 +17,13 @@ export async function getTeams(req, res) {
         LEFT JOIN 
           employee e ON t.team_lead_id = e.id;
       `;
-
+      console.log("teams ", teams)
       return res.json(teams);
     } catch (error) {
       console.error("Error retrieving teams:", error);
       return res.status(500).send("Error retrieving teams");
     }
 }
+
+
+

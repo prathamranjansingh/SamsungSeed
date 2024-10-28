@@ -6,6 +6,7 @@ import AdminRoutes from './pages/Dashboard/AdminRoutes';
 import ProtectedRoute from './components/PrivateRoute';
 import TeamLeadRoute from './pages/Dashboard/TeamLeadRoute'
 import EmployeeRoute from './pages/Dashboard/EmployeeRoute';
+import { ProjectRoute } from './pages/Dashboard/ProjectRoute';
 const App = () => {
   return (
     <AuthProvider>
@@ -21,6 +22,7 @@ const App = () => {
         <Route element={<ProtectedRoute allowedRoles={['employee']} />}>
             <Route path="/employee/*" element={<EmployeeRoute />} />
         </Route>
+        <Route path="/projectmgr/*" element={<ProjectRoute />} />
       </Routes>
     </AuthProvider>
   );
