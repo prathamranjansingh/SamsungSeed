@@ -1,0 +1,101 @@
+[
+  {
+    "employee": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890",
+    "status": "Active",
+    "statusVariant": "success",
+    "dueDate": "2024-09-30",
+    "address": "123 Elm Street, Springfield"
+  },
+  {
+    "employee": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "phone": "+0987654321",
+    "status": "Inactive",
+    "statusVariant": "danger",
+    "dueDate": "2024-10-15",
+    "address": "456 Oak Avenue, Metropolis"
+  },
+  {
+    "employee": "Alice Johnson",
+    "email": "alice.johnson@example.com",
+    "phone": "+1122334455",
+    "status": "Active",
+    "statusVariant": "success",
+    "dueDate": "2024-11-01",
+    "address": "789 Pine Road, Gotham"
+  },
+  {
+    "employee": "Bob Brown",
+    "email": "bob.brown@example.com",
+    "phone": "+5566778899",
+    "status": "Inactive",
+    "statusVariant": "warning",
+    "dueDate": "2024-12-01",
+    "address": "101 Maple Street, Star City"
+  },
+  {
+    "employee": "Charlie Davis",
+    "email": "charlie.davis@example.com",
+    "phone": "+2233445566",
+    "status": "Active",
+    "statusVariant": "success",
+    "dueDate": "2024-09-20",
+    "address": "202 Birch Lane, Central City"
+  },
+  {
+    "employee": "Diana Green",
+    "email": "diana.green@example.com",
+    "phone": "+3344556677",
+    "status": "Inactive",
+    "statusVariant": "danger",
+    "dueDate": "2024-10-10",
+    "address": "303 Cedar Boulevard, Riverdale"
+  },
+  {
+    "employee": "Eve White",
+    "email": "eve.white@example.com",
+    "phone": "+4455667788",
+    "status": "Inactive",
+    "statusVariant": "warning",
+    "dueDate": "2024-11-15",
+    "address": "404 Walnut Street, Kingsport"
+  },
+  {
+    "employee": "Frank Black",
+    "email": "frank.black@example.com",
+    "phone": "+5566778899",
+    "status": "Active",
+    "statusVariant": "success",
+    "dueDate": "2024-09-25",
+    "address": "505 Elm Street, Springfield"
+  },
+  {
+    "employee": "Grace White",
+    "email": "grace.white@example.com",
+    "phone": "+6677889900",
+    "status": "Inactive",
+    "statusVariant": "danger",
+    "dueDate": "2024-10-20",
+    "address": "606 Oak Avenue, Metropolis"
+  },
+  {
+    "employee": "Hank Blue",
+    "email": "hank.blue@example.com",
+    "phone": "+7788990011",
+    "status": "Inactive",
+    "statusVariant": "warning",
+    "dueDate": "2024-11-05",
+    "address": "707 Pine Road, Gotham"
+  },
+  {
+    "employee": "Ivy Red",
+    "email": "ivy.red@example.com",
+    "phone": "+8899001122",
+    "status": "Active",
+    "statusVariant": "success",
+    "dueDate": "2024-09-28",
+    "address": "808 Maple Street, Star City"
+  }
+]
