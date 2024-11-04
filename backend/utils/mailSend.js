@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { db } from '../index.js';
+import { db } from '../db/connectDB.js';
 import jwt from 'jsonwebtoken';
 import env from 'dotenv';
 

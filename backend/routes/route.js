@@ -1,42 +1,57 @@
-import express from 'express';
-import { login, resetPassword } from '../Auth/auth.js';
-import {registerEmployee, getEmployees } from '../controllers/employee.js'
-import { forgotPassword } from '../utils/mailSend.js';
+import express, { Router } from 'express';
 import multer from 'multer';
-import { handleAttendanceUpload, handleGetAttendance } from '../controllers/attendance.js';
-import { fetchData } from '../controllers/client/fetchData.js';
-import { empAdd } from '../controllers/client/empUpdate.js';
-import { createTeam } from '../controllers/teams/createTeam.js';
-import { createProject, getAllProjects } from '../controllers/projects/createProject.js';
-import { deleteProject } from '../controllers/projects/deleteProject.js';
-import { deleteTeam } from '../controllers/teams/deleteTeam.js';
-import { getEmpProjects } from '../controllers/projects/empProjects.js';
-import { countTeamLeadStats } from '../controllers/teamlead/countTeamLead.js';
-import { getTeamLead } from '../controllers/teamlead/getteamlead.js';
-import { editDueDate } from '../controllers/projects/editProject.js';
-import  {getTeams}  from '../controllers/teams/getTeams.js';
 
+
+import { adminRegister } from '../controllers/admin.js';
+import {registerEmployee, getEmployees, empAdd, updateRole } from '../controllers/client.js'
+import { handleAttendanceUpload, handleGetAttendance } from '../controllers/attendance.js';
+import { createTeam,checkTeamLead,deleteTeam, getTeams } from '../controllers/teams.js';
+import { createProject, deleteProject, editDueDate, getProject, getAllProjects} from '../controllers/project.js';
+import { countTeamLeadStats, getTeamLead, fetchTeamLead, updateTeamLead } from '../controllers/teamlead.js';
+import { updateprojectmanager , getProjectManager} from '../controllers/projectmanager.js';
+
+
+
+import { login, resetPassword } from '../Auth/auth.js';
+import { forgotPassword } from '../utils/mailSend.js';
+
+
+//middleware
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
+
+router.post('/register-admin', adminRegister);
+
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:id/:token', resetPassword);
 router.post('/register-employee', registerEmployee);
-router.get('/employees', getEmployees);
+
+router.get('/getProjectManager', getProjectManager);   //new
+router.post('/updateProjectManager', updateprojectmanager);  //new
+router.post('/fetchTeamLead', fetchTeamLead);  //new
+router.post('/updateTeamLead', updateTeamLead);  //new
+router.get('/employees', getEmployees);     //same as fetchData
+
+router.post('/emp-add',empAdd);
+router.post('/createTeam', authMiddleware, createTeam);
+router.post('/delete-team', deleteTeam);  
+router.post('/create-project', createProject); //@-- working (changed naming convention)
+
+//not tested yet
+router.delete('/delete-project', deleteProject);  //@-- working
+router.get('/get-project',getProject); //@--  working get details of project by its id 
+router.get('/getLeadDetails', countTeamLeadStats); //@-- working ---??
+ router.get('/getTeamLead', getTeamLead); //@ working
+ router.patch('/edit-project', editDueDate); //@-- working
+router.post('/update-role', updateRole); //@-- working
+// router.get('/check-teamLead', checkTeamLead);
+ router.get('/getTeams', getTeams); //@-- working
+ router.get('/getProjects', getAllProjects); //@-- working
+
 router.post('/upload', upload.single('file'), handleAttendanceUpload);
 router.get('/attendance', handleGetAttendance);
-router.get('/emp-fetch',fetchData);
-router.post('/emp-add',empAdd);
-router.post('/team-create', createTeam);
-router.post('/project-create', createProject);
-router.post('/delete-project', deleteProject);  
-router.post('/delete-team', deleteTeam);   
-router.get('/get-projects',getEmpProjects); 
-router.post('/get-leaddetails', countTeamLeadStats);
-router.post('/getTeamLead', getTeamLead);
-router.post('/edit-project', editDueDate);
-router.get('/get-team', getTeams)
-router.get('/get-Allprojects', getAllProjects);
 
 export { router };

@@ -62,7 +62,7 @@ export default function TasksPage() {
         setFolders(prev => [...prev, newProject]);
         resetForm();
         toast({
-          title: "Project created",
+          title: "Task created",
           description: `${newFolderName} has been added for team ${selectedTeam} with due date ${format(dueDate, 'PP')}.`,
         });
       } catch (error) {
@@ -110,7 +110,7 @@ export default function TasksPage() {
         await axios.post(`${import.meta.env.VITE_BACKEND_URL}/delete-project`, { project_id: projectToDelete });
         setFolders(folders.filter((folder) => folder.id !== projectToDelete));
         toast({
-          title: "Project deleted",
+          title: "Task deleted",
           description: "The project has been successfully deleted.",
         });
         closeDeleteModal();
@@ -165,7 +165,7 @@ export default function TasksPage() {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Projects</h1>
+      <h1 className="text-2xl font-bold mb-6">Tasks</h1>
 
       {/* Folders */}
       <h2 className="text-lg font-semibold mb-4">Folders</h2>
@@ -176,15 +176,15 @@ export default function TasksPage() {
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
                 <PlusIcon className="text-black" />
               </div>
-              <span className="text-sm font-medium">Add New Project</span>
+              <span className="text-sm font-medium">Add New Task</span>
             </div>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Project</DialogTitle>
+              <DialogTitle>Add New Task</DialogTitle>
             </DialogHeader>
             <Input
-              placeholder="Project Name"
+              placeholder="Task Name"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
             />
@@ -193,7 +193,7 @@ export default function TasksPage() {
               onChange={(e) => setSelectedTeam(e.target.value)}
               className="mt-2 border rounded-lg p-2"
             >
-              <option value="" disabled>Select a Project Manager</option>
+              <option value="" disabled>Select a Task Manager</option>
               {teams.map((team) => (
                 <option key={team.id} value={team.team_name}>{team.team_name}</option>
               ))}
@@ -218,7 +218,7 @@ export default function TasksPage() {
                 />
               </PopoverContent>
             </Popover>
-            <Button onClick={handleCreateProject} className="mt-4">Create Project</Button>
+            <Button onClick={handleCreateProject} className="mt-4">Create Task</Button>
           </DialogContent>
         </Dialog>
         {folders.map((folder) => (

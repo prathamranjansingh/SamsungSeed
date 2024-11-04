@@ -22,7 +22,9 @@ const App = () => {
         <Route element={<ProtectedRoute allowedRoles={['employee']} />}>
             <Route path="/employee/*" element={<EmployeeRoute />} />
         </Route>
-        <Route path="/projectmgr/*" element={<ProjectRoute />} />
+        <Route element={<ProtectedRoute allowedRoles={['projectmanager']} />}>
+            <Route path="/projectmanager/*" element={<ProjectRoute />} />
+        </Route>
       </Routes>
     </AuthProvider>
   );
