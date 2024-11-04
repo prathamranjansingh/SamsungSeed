@@ -55,7 +55,7 @@ export default function ProjectsPage() {
         const formattedDueDate = format(dueDate, 'yyyy-MM-dd');
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/create-project`, {
           project_name: newProjectName,
-          project_manager_id: selectedProjectManagerId,
+          employee_id: selectedProjectManagerId,
           due_date: formattedDueDate,
         });
         const newProject = response.data[0];
@@ -107,7 +107,9 @@ export default function ProjectsPage() {
   const handleDeleteProject = async () => {
     if (projectToDelete) {
       try {
+        console.log(projectToDelete);
         await axios.post(`${import.meta.env.VITE_BACKEND_URL}/delete-project`, { project_id: projectToDelete });
+        console.log(projectToDelete);
         setProjects(projects.filter((project) => project.id !== projectToDelete));
         toast({
           title: "Project deleted",

@@ -3,46 +3,80 @@ import { db } from "../db/connectDB.js";
 //FUnction to create project
 export async function createProject(req, res) {
     try{
-        const {project_name, project_manager_id, due_date} = req.body;
-        //console.log(project_name, project_manager_id, team_name, description, due_date);
+        const {project_name, employee_id,due_date} = req.body;
+        
+        if(!project_name || !employee_id || !due_date){
+            return res.status(400).send("Missing required fields");
+        }
 
-        //Getting team id from team_name in teams table
-        const team_id = await db`SELECT id FROM Teams WHERE team_name = ${team_name}`;
-        const teamid = team_id[0].id;
+        //get employee details
+        const projectManager = await db`SELECT id,name,email,password,skill,experience FROM Employee WHERE id = ${employee_id}`;
+        console.log(projectManager);
 
-        //console.log(teamid);
+        //delete employee from employee table
+        await db`DELETE FROM Employee WHERE id = ${employee_id}`;
 
-        //Insert the project into the Projects table
-        const project = await db`INSERT INTO Projects (project_name, project_manager_id, team_id, description, due_date) VALUES (${project_name}, ${project_manager_id},${teamid}, ${description}, ${due_date}) RETURNING *`;
-        return res.status(200).send(project);
+        const check = await db`SELECT * FROM ProjectManager WHERE email = ${projectManager[0].id}`;
+        if(check.length != 0){
+            return res.status(400).send("Employee is a project manager");
+        }
+
+
+        await db`Insert into ProjectManager (id, name, email, password, skill, experience) VALUES (${projectManager[0].id},${projectManager[0].name}, ${projectManager[0].email}, ${projectManager[0].password}, ${projectManager[0].skill}, ${projectManager[0].experience})`;
+
+        await db`INSERT INTO Projects (project_name, project_manager_id, due_date) VALUES (${project_name}, ${projectManager[0].id}, ${due_date})`;
+
+        return res.status(200).send("Project created successfully");
     }
-    catch (err) {
+    catch (err){
         console.error("Error creating project:", err);
         return res.status(500).send("Database error");
     }
 }
 
+
+
 //Function to delete project
 export async function deleteProject(req, res) {
     const { project_id } = req.body;
-        if(!project_id){
-            return res.status(400).send("Project id is required");
+    
+    if (!project_id) {
+        return res.status(400).send("Project ID is required");
+    }
+
+    try {
+
+        // Check if the project exists and get the project manager ID
+        const projectResult = await db`SELECT project_manager_id FROM Projects WHERE id = ${project_id}`;
+        if (projectResult.length === 0) {
+            await db.rollback();
+            return res.status(404).send("Project not found");
         }
 
-    try{
-        
+        const projectManagerId = projectResult[0].project_manager_id;
 
-        const result = await db`SELECT project_manager_id FROM Projects WHERE id = ${project_id}`;
-        const projectManagerId = result[0].project_manager_id;
-        
-        const projectManager = await db`SELECT * FROM ProjectManager WHERE id = ${projectManagerId}`;
-        console.log(`Project manager: ${projectManager[0].name}`);
+        // Get project manager details
+        const projectManagerResult = await db`SELECT * FROM ProjectManager WHERE id = ${projectManagerId}`;
+        if (projectManagerResult.length === 0) {
+            await db.rollback();
+            return res.status(404).send("Project manager not found");
+        }
 
+        const projectManager = projectManagerResult[0];
+
+        // Delete project
         await db`DELETE FROM Projects WHERE id = ${project_id}`;
 
-        return res.status(200).send("Deleted!!");
-    }
-    catch (err){
+        // Insert project manager back into the Employee table
+        await db`INSERT INTO Employee (id, name, email, password, skill, experience) 
+                 VALUES (${projectManager.id}, ${projectManager.name}, ${projectManager.email}, 
+                         ${projectManager.password}, ${projectManager.skill}, ${projectManager.experience})`;
+
+        // Delete project manager from the ProjectManager table
+        await db`DELETE FROM ProjectManager WHERE id = ${projectManager.id}`;
+
+        return res.status(200).send("Deleted!");
+    } catch (err) {
         console.error("Error deleting project:", err);
         return res.status(500).send("Database error");
     }
@@ -108,20 +142,14 @@ export const getProject = async (req, res) => {
         
         const results = await db`
             SELECT 
-                p.id,
-                p.project_name,
-                t.project_manager_id,
-                t.team_name,
-                p.due_date,
-                ARRAY(
-                    SELECT em.name
-                    FROM employee em
-                    WHERE em.id = ANY(t.team_members)
-                ) AS team_members
+                id,
+                project_name,
+                project_manager_id,
+                due_date
+               
             FROM 
-                Projects p
-            JOIN 
-                Teams t ON p.team_id = t.id
+                Projects
+           
         `;
 
         if (results.length === 0) {

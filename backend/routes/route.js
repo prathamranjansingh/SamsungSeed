@@ -41,11 +41,11 @@ router.post('/delete-team', deleteTeam);
 router.post('/create-project', createProject); //@-- working (changed naming convention)
 
 //not tested yet
-router.delete('/delete-project', deleteProject);  //@-- working
+router.post('/delete-project', deleteProject);  //@-- working
 router.get('/get-project',getProject); //@--  working get details of project by its id 
 router.get('/getLeadDetails', countTeamLeadStats); //@-- working ---??
  router.get('/getTeamLead', getTeamLead); //@ working
- router.patch('/edit-project', editDueDate); //@-- working
+ router.post('/edit-project', editDueDate); //@-- working
 router.post('/update-role', updateRole); //@-- working
 // router.get('/check-teamLead', checkTeamLead);
  router.get('/getTeams', getTeams); //@-- working
