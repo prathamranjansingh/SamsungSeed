@@ -33,7 +33,7 @@ router.get('/getProjectManager', getProjectManager);   //new
 router.post('/updateProjectManager', updateprojectmanager);  //new
 router.post('/fetchTeamLead', fetchTeamLead);  //new
 router.post('/updateTeamLead', updateTeamLead);  //new
-router.get('/employees', getEmployees);     //same as fetchData
+router.get('/getEmployees', getEmployees);     //same as fetchData
 
 router.post('/emp-add',empAdd);
 router.post('/createTeam', authMiddleware, createTeam);

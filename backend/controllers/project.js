@@ -3,7 +3,7 @@ import { db } from "../db/connectDB.js";
 //FUnction to create project
 export async function createProject(req, res) {
     try{
-        const {project_name, project_manager_id, team_name, description, due_date} = req.body;
+        const {project_name, project_manager_id, due_date} = req.body;
         //console.log(project_name, project_manager_id, team_name, description, due_date);
 
         //Getting team id from team_name in teams table

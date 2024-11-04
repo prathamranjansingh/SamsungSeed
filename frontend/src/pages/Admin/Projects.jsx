@@ -30,7 +30,7 @@ export default function ProjectsPage() {
     try {
       const [projectsResponse, managersResponse] = await Promise.all([
         axios.get(`${import.meta.env.VITE_BACKEND_URL}/getProjects`),
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getProjectManager`)
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getEmployees`)
       ]);
 
       setProjects(projectsResponse.data);
@@ -53,7 +53,7 @@ export default function ProjectsPage() {
     if (newProjectName && selectedProjectManagerId && dueDate) {
       try {
         const formattedDueDate = format(dueDate, 'yyyy-MM-dd');
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/project-create`, {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/create-project`, {
           project_name: newProjectName,
           project_manager_id: selectedProjectManagerId,
           due_date: formattedDueDate,
