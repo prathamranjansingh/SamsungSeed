@@ -123,7 +123,6 @@ export async function deleteTeam(req, res) {
 
 
 // Function to get all teams
-// Function to get all teams
 export async function getTeams(req, res) {
     const authHeader = req.headers.authorization;
 
@@ -142,23 +141,42 @@ export async function getTeams(req, res) {
         user = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Decoded user:", user);
 
-        // Fetch project manager ID from Employee table using the user's email
+        // Fetch project manager ID from the projectmanager table using the user's email
         const projectManagerResult = await db`SELECT id FROM projectmanager WHERE email = ${user.id}`;
         if (projectManagerResult.length === 0) {
             return res.status(404).send("Project manager not found");
         }
         const projectManagerId = projectManagerResult[0].id;
+
+        // Fetch teams with team lead names and team member names
+        const teams = await db`
+            SELECT 
+                t.id AS team_id,
+                t.team_name,
+                tl.name AS lead_name,
+                ARRAY(
+                    SELECT e.name 
+                    FROM employee e 
+                    WHERE e.id = ANY(t.team_members)
+                ) AS team_member_names
+            FROM teams t
+            LEFT JOIN teamlead tl ON t.team_lead_id = tl.id
+            WHERE t.project_manager_id = ${projectManagerId}
+        `;
+
+        console.log("Fetched teams with leads and members:", teams);
+        return res.status(200).json({ teams });
         
-        // Fetch all teams managed by the project manager
-        const teams = await db`SELECT * FROM teams WHERE project_manager_id = ${projectManagerId}`;
-        console.log("teamNaya ", teams);
-        
-        return res.status(200).send(teams);
     } catch (err) {
         console.error("Error fetching teams:", err);
-        return res.status(500).send("Database error");
+        return res.status(500).json({
+            success: false,
+            message: "Database error",
+            error: err.message,
+        });
     }
 }
+
 
 //ney 
 
@@ -206,8 +224,7 @@ export async function getTaskUnassignedTeams(req, res) {
 
         // Send back the teams in the response
         return res.status(200).json({
-            success: true,
-            teams: teams,
+ teams,
         });
     } catch (err) {
         console.error("Error fetching teams:", err);

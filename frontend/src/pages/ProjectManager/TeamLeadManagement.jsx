@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button";
@@ -29,6 +27,7 @@ const TeamLeadManagement = () => {
 
   const token = localStorage.getItem('token');
 
+  
   const fetchData = useCallback(async () => {
     if (!token) {
         toast({
@@ -51,14 +50,17 @@ const TeamLeadManagement = () => {
         ]);
 
         const employeesData = employeesResponse.data || [];
-        setEmployees(employeesData); // Ensure employees state is set
-        console.log('Employees:', employeesData); // Log to confirm
+        
+        
+        setEmployees(employeesData);
 
-        const teamsData = teamsResponse.data || [];
+        const teamsData = teamsResponse.data.teams || [];
+    
         setTeams(teamsData.map((team) => ({
-            id: team.id,
+            team_id: team.team_id,
             team_name: team.team_name,
-            lead: employeesData.find((emp) => emp.id === team.team_lead_id)?.name || 'Unknown',
+            lead_name: team.lead_name,
+            team_member_names: team.team_member_names,
         })));
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -72,7 +74,7 @@ const TeamLeadManagement = () => {
     }
 }, [token, toast]);
 
-
+  
 
   useEffect(() => {
     fetchData();
@@ -127,7 +129,7 @@ const TeamLeadManagement = () => {
         team_lead_id: newTeam.team_lead_id,
         members: newTeam.member_ids
       }
-      console.log('object', obj);
+      
       
       const response = await axios.post(
         `${BACKEND_URL}/createTeam`,
@@ -166,13 +168,14 @@ const TeamLeadManagement = () => {
     return teamLead ? teamLead.name : '';
   };
 
-  // Function to get available team members (excluding the selected team lead)
   const getAvailableMembers = () => {
     return employees.filter(employee => {
-      // Convert both IDs to strings for comparison
       return String(employee.id) !== String(newTeam.team_lead_id);
     });
   };
+
+
+  
 
   return (
     <div className="container mx-auto p-4">
@@ -215,7 +218,6 @@ const TeamLeadManagement = () => {
                         setNewTeam(prev => ({
                           ...prev,
                           team_lead_id: e.target.value,
-                          // Clear member selection when team lead changes
                           member_ids: []
                         }));
                       }}
@@ -284,30 +286,39 @@ const TeamLeadManagement = () => {
                 <TableRow>
                   <TableHead className="w-[200px]">Team Name</TableHead>
                   <TableHead>Team Lead</TableHead>
+                  <TableHead>Team Members</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center">
+                    <TableCell colSpan={3} className="text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : teams.length > 0 ? (
                   teams.map((team) => (
-                    <TableRow key={team.id}>
+                    <TableRow key={team.team_id}>
                       <TableCell className="font-medium">{team.team_name}</TableCell>
                       <TableCell>
                         <div className="flex items-center text-green-800">
                           <UserIcon className="w-3 h-3 mr-1" />
-                          {team.lead}
+                          {team.lead_name}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {team.team_member_names.map((memberName, index) => (
+                          <div key={index} className="flex items-center text-gray-600">
+                            <UserIcon className="w-3 h-3 mr-1" />
+                            {memberName}
+                          </div>
+                        ))}
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center">
+                    <TableCell colSpan={3} className="text-center">
                       No teams available.
                     </TableCell>
                   </TableRow>

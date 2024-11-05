@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -23,15 +23,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/dialog";
-import {
-  MoreHorizontalIcon,
-  PlusIcon,
-  CalendarIcon,
-} from "lucide-react";
+import { MoreHorizontalIcon, PlusIcon, CalendarIcon } from "lucide-react";
 import { Calendar } from "../../components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
 export default function TasksPage() {
   const { toast } = useToast();
@@ -49,18 +45,22 @@ export default function TasksPage() {
     setLoading(true);
     try {
       const [tasksResponse, teamsResponse] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getTasks`),
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getTeams`, {
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getTasks`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getUnassignedTeams`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
-      setTasks(tasksResponse.data || []);
-      setTeams(teamsResponse.data || []);
+
+      setTasks(Array.isArray(tasksResponse.data) ? tasksResponse.data : []);
+      setTeams(teamsResponse.data.teams || []);
+      
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
         title: "Error fetching data",
-        description: "Could not fetch tasks and teams.",
+        description: "Could not fetch tasks and teams. Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -73,38 +73,39 @@ export default function TasksPage() {
   }, [fetchData]);
 
   const handleCreateTask = async () => {
-    if (newTaskName && selectedTeam && dueDate) {
-      try {
-        const formattedDueDate = format(dueDate, "yyyy-MM-dd");
-        const obj = {
-          task_name: newTaskName,
-          team_id: selectedTeam,
-          due_date: formattedDueDate,
-        };
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/create-task`,
-          obj,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        setTasks((prev) => [...prev, response.data]);
-        resetForm();
-        toast({
-          title: "Task created",
-          description: `${newTaskName} has been added with due date ${format(dueDate, "PP")}.`,
-        });
-      } catch (error) {
-        console.error("Error creating task:", error);
-        toast({
-          title: "Error",
-          description: "There was an error creating the task.",
-          variant: "destructive",
-        });
-      }
-    } else {
+    if (!newTaskName || !selectedTeam || !dueDate) {
       toast({
         title: "Missing Information",
         description: "Please provide a task name, select a team, and set a due date.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const formattedDueDate = format(dueDate, "yyyy-MM-dd");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/create-task`,
+        {
+          task_name: newTaskName,
+          team_id: selectedTeam,
+          due_date: formattedDueDate,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setTasks((prev) => [...prev, response.data]);
+      resetForm();
+      toast({
+        title: "Task created",
+        description: `${newTaskName} has been added with due date ${format(dueDate, "PP")}.`,
+      });
+      fetchData();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast({
+        title: "Error",
+        description: "There was an error creating the task. Please try again.",
         variant: "destructive",
       });
     }
@@ -129,27 +130,47 @@ export default function TasksPage() {
   const handleDeleteTask = async () => {
     if (taskToDelete) {
       try {
-        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/delete-task`, { task_id: taskToDelete });
-        setTasks(tasks.filter((task) => task.id !== taskToDelete));
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/delete-task`,
+          { task_id: taskToDelete },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskToDelete));
         toast({
           title: "Task deleted",
           description: "The task has been successfully deleted.",
         });
         closeDeleteModal();
+        fetchData();
       } catch (error) {
         console.error("Error deleting task:", error);
         toast({
           title: "Error",
-          description: "There was an error deleting the task.",
+          description: "There was an error deleting the task. Please try again.",
           variant: "destructive",
         });
       }
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const formatDate = (dateString) => {
+    if (!dateString) return "No date set";
+    const date = parseISO(dateString);
+    return isValid(date) ? format(date, "PP") : "Invalid date";
+  };
+
+  const sortedTasks = useMemo(() => {
+    return tasks
+      .filter((task) => task.due_date)
+      .sort((a, b) => {
+        const dateA = parseISO(a.due_date);
+        const dateB = parseISO(b.due_date);
+        return isValid(dateA) && isValid(dateB) ? dateA - dateB : 0;
+      });
+        
+  }, [tasks]);
+ 
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="container mx-auto p-6">
@@ -158,54 +179,59 @@ export default function TasksPage() {
       {/* Add New Task */}
       <Dialog>
         <DialogTrigger asChild>
-          <div className="border rounded-lg p-4 flex flex-col items-center justify-center space-y-2 cursor-pointer hover:bg-gray-50">
-            <PlusIcon className="text-black" />
-            <span className="text-sm font-medium">Add New Task</span>
-          </div>
+          <Button className="mb-4">
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add New Task
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add New Task</DialogTitle>
           </DialogHeader>
-          <Input
-            placeholder="Task Name"
-            value={newTaskName}
-            onChange={(e) => setNewTaskName(e.target.value)}
-          />
-          <select
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-            className="mt-2 border rounded-lg p-2"
-          >
-            <option value="" disabled>Select a team</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.team_name} - Team ID: {team.id}
-              </option>
-            ))}
-          </select>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            handleCreateTask();
+          }}>
+            <Input
+              placeholder="Task Name"
+              value={newTaskName}
+              onChange={(e) => setNewTaskName(e.target.value)}
+              className="mb-4"
+            />
+            <select
+              value={selectedTeam}
+              onChange={(e) => setSelectedTeam(e.target.value)}
+              className="w-full mb-4 border rounded-lg p-2"
+            >
+              <option value="" disabled>Select a team</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.team_name}
+                </option>
+              ))}
+            </select>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="due-date"
-                variant="outline"
-                className={`w-full justify-start text-left font-normal ${!dueDate && "text-muted-foreground"}`}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dueDate ? format(dueDate, "PP") : <span>Pick a due date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dueDate}
-                onSelect={setDueDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <Button onClick={handleCreateTask} className="mt-4">Create Task</Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-full justify-start text-left font-normal ${!dueDate && "text-muted-foreground"}`}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dueDate ? format(dueDate, "PP") : <span>Pick a due date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={setDueDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <Button type="submit" className="mt-4 w-full">Create Task</Button>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -220,23 +246,21 @@ export default function TasksPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tasks.map((task) => (
+          {sortedTasks.map((task) => (
             <TableRow key={task.id}>
               <TableCell>{task.task_name}</TableCell>
               <TableCell>{task.team_id}</TableCell>
-              <TableCell>{format(new Date(task.due_date), "PP")}</TableCell>
+              <TableCell>{formatDate(task.due_date)}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
                       <MoreHorizontalIcon className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation();
-                      openDeleteModal(task.id);
-                    }}>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => openDeleteModal(task.id)}>
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -248,20 +272,20 @@ export default function TasksPage() {
       </Table>
 
       {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <Dialog open={isDeleteModalOpen} onOpenChange={closeDeleteModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-            </DialogHeader>
-            <p>Are you sure you want to delete this task?</p>
-            <div className="flex justify-end mt-4">
-              <Button onClick={closeDeleteModal} variant="outline" className="mr-2">Cancel</Button>
-              <Button onClick={handleDeleteTask} variant="destructive">Delete</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Task</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this task?</p>
+          <Button variant="destructive" onClick={handleDeleteTask} className="mt-4">
+            Confirm
+          </Button>
+          <Button variant="outline" onClick={closeDeleteModal} className="mt-2">
+            Cancel
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
