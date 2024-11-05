@@ -34,7 +34,7 @@ export function DashboardContent() {
     const fetchEmployeeData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${backendUrl}/emp-fetch`, {
+        const response = await axios.get(`${backendUrl}/employees`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -64,7 +64,7 @@ export function DashboardContent() {
       });
       setIsEditing(false); // Exit edit mode
       // Optionally, refetch data to reflect changes
-      const response = await axios.get(`${backendUrl}/emp-fetch`, {
+      const response = await axios.get(`${backendUrl}/employees`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

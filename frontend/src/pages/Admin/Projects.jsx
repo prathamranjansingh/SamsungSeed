@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
-import { FolderIcon, FileIcon, MoreHorizontalIcon, PlusIcon, UploadIcon, CalendarIcon } from "lucide-react";
+import { FolderIcon, FileIcon, MoreHorizontalIcon, PlusIcon, CalendarIcon } from "lucide-react";
 import { Calendar } from "../../components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
@@ -14,32 +14,32 @@ import { format, isValid, parseISO } from "date-fns";
 export default function ProjectsPage() {
   const { toast } = useToast();
 
-  const [folders, setFolders] = useState([]);
-  const [newFolderName, setNewFolderName] = useState("");
-  const [selectedFolder, setSelectedFolder] = useState(null);
-  const [selectedTeam, setSelectedTeam] = useState("");
+  const [projects, setProjects] = useState([]);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProjectManagerId, setSelectedProjectManagerId] = useState("");
   const [dueDate, setDueDate] = useState(null);
-  const [teams, setTeams] = useState([]);
-  const fileInputRef = useRef(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditDueDateModalOpen, setIsEditDueDateModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [projectToEdit, setProjectToEdit] = useState(null);
   const [newDueDate, setNewDueDate] = useState(null);
+  const [projectManagers, setProjectManagers] = useState([]);
 
   const fetchData = useCallback(async () => {
     try {
-      const [projectsResponse, teamsResponse] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-Allprojects`),
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-team`)
+      const [projectsResponse, managersResponse] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getProjects`),
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/getEmployees`)
       ]);
-      setFolders(projectsResponse.data);
-      setTeams(teamsResponse.data);
+
+      setProjects(projectsResponse.data);
+      setProjectManagers(managersResponse.data);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
         title: "Error fetching data",
-        description: "Could not fetch projects and teams.",
+        description: "Could not fetch projects and managers.",
         variant: "destructive",
       });
     }
@@ -50,20 +50,20 @@ export default function ProjectsPage() {
   }, [fetchData]);
 
   const handleCreateProject = async () => {
-    if (newFolderName && selectedTeam && dueDate) {
+    if (newProjectName && selectedProjectManagerId && dueDate) {
       try {
         const formattedDueDate = format(dueDate, 'yyyy-MM-dd');
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/project-create`, {
-          project_name: newFolderName,
-          team_name: selectedTeam,
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/create-project`, {
+          project_name: newProjectName,
+          employee_id: selectedProjectManagerId,
           due_date: formattedDueDate,
         });
         const newProject = response.data[0];
-        setFolders(prev => [...prev, newProject]);
+        setProjects(prev => [...prev, newProject]);
         resetForm();
         toast({
           title: "Project created",
-          description: `${newFolderName} has been added for team ${selectedTeam} with due date ${format(dueDate, 'PP')}.`,
+          description: `${newProjectName} has been added with due date ${format(dueDate, 'PP')}.`,
         });
       } catch (error) {
         console.error("Error creating project:", error);
@@ -76,15 +76,15 @@ export default function ProjectsPage() {
     } else {
       toast({
         title: "Missing Information",
-        description: "Please provide a project name, select a team, and set a due date.",
+        description: "Please provide a project name, project manager, and due date.",
         variant: "destructive",
       });
     }
   };
 
   const resetForm = () => {
-    setNewFolderName("");
-    setSelectedTeam("");
+    setNewProjectName("");
+    setSelectedProjectManagerId("");
     setDueDate(null);
   };
 
@@ -107,8 +107,10 @@ export default function ProjectsPage() {
   const handleDeleteProject = async () => {
     if (projectToDelete) {
       try {
+        console.log(projectToDelete);
         await axios.post(`${import.meta.env.VITE_BACKEND_URL}/delete-project`, { project_id: projectToDelete });
-        setFolders(folders.filter((folder) => folder.id !== projectToDelete));
+        console.log(projectToDelete);
+        setProjects(projects.filter((project) => project.id !== projectToDelete));
         toast({
           title: "Project deleted",
           description: "The project has been successfully deleted.",
@@ -146,7 +148,7 @@ export default function ProjectsPage() {
           date: formattedNewDueDate,
         });
         const updatedProject = response.data[0];
-        setFolders(prev => prev.map(folder => folder.id === updatedProject.id ? updatedProject : folder));
+        setProjects(prev => prev.map(project => project.id === updatedProject.id ? updatedProject : project));
         toast({
           title: "Due date updated",
           description: `The due date for ${projectToEdit.project_name} has been updated to ${format(newDueDate, 'PP')}.`,
@@ -167,8 +169,8 @@ export default function ProjectsPage() {
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Projects</h1>
 
-      {/* Folders */}
-      <h2 className="text-lg font-semibold mb-4">Folders</h2>
+      {/* Projects */}
+      <h2 className="text-lg font-semibold mb-4">Projects</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
         <Dialog>
           <DialogTrigger asChild>
@@ -185,17 +187,19 @@ export default function ProjectsPage() {
             </DialogHeader>
             <Input
               placeholder="Project Name"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
             />
             <select
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
+              value={selectedProjectManagerId}
+              onChange={(e) => setSelectedProjectManagerId(e.target.value)}
               className="mt-2 border rounded-lg p-2"
             >
               <option value="" disabled>Select a Project Manager</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.team_name}>{team.team_name}</option>
+              {projectManagers.map((manager) => (
+                <option key={manager.id} value={manager.id}>
+                  {manager.name}
+                </option>
               ))}
             </select>
             <Popover>
@@ -221,16 +225,16 @@ export default function ProjectsPage() {
             <Button onClick={handleCreateProject} className="mt-4">Create Project</Button>
           </DialogContent>
         </Dialog>
-        {folders.map((folder) => (
+        {projects.map((project) => (
           <div
-            key={folder.id}
-            className={`border rounded-lg p-4 flex flex-col items-center justify-center space-y-2 cursor-pointer ${selectedFolder?.id === folder.id ? "bg-gray-100 border-black" : "hover:bg-gray-50"}`}
-            onClick={() => setSelectedFolder(folder)}
+            key={project.id}
+            className={`border rounded-lg p-4 flex flex-col items-center justify-center space-y-2 cursor-pointer ${selectedProject?.id === project.id ? "bg-gray-100 border-black" : "hover:bg-gray-50"}`}
+            onClick={() => setSelectedProject(project)}
           >
             <FolderIcon className="w-12 h-12 text-black" />
-            <span className="text-sm font-medium">{folder.project_name}</span>
-            <span className="text-xs text-gray-500">{folder.team_name}</span>
-            <span className="text-xs text-gray-500">Due: {formatDate(folder.due_date)}</span>
+            <span className="text-sm font-medium">{project.project_name}</span>
+            <span className="text-xs text-gray-500">{project.team_name}</span>
+            <span className="text-xs text-gray-500">Due: {formatDate(project.due_date)}</span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" onClick={(e) => e.stopPropagation()}>
@@ -240,13 +244,13 @@ export default function ProjectsPage() {
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
-                  openEditDueDateModal(folder);
+                  openEditDueDateModal(project);
                 }}>
                   Edit Due Date
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
-                  openDeleteModal(folder.id);
+                  openDeleteModal(project.id);
                 }}>
                   Delete
                 </DropdownMenuItem>
@@ -256,26 +260,26 @@ export default function ProjectsPage() {
         ))}
       </div>
 
-      {/* Files */}
-      <h2 className="text-lg font-semibold mb-4">Files</h2>
+      {/* Team Members */}
+      <h2 className="text-lg font-semibold mb-4">Team Members</h2>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Project Name</TableHead>
               <TableHead>Members Name</TableHead>
-              <TableHead>Date</TableHead>
+              <TableHead>Due Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {selectedFolder && selectedFolder.team_members && selectedFolder.team_members.map((member, index) => (
+            {selectedProject && selectedProject.team_members && selectedProject.team_members.map((member, index) => (
               <TableRow key={index}>
                 <TableCell>
                   <FileIcon className="mr-2 h-4 w-4 inline" />
-                  {selectedFolder.project_name}
+                  {selectedProject.project_name}
                 </TableCell>
                 <TableCell>{member}</TableCell>
-                <TableCell>{formatDate(selectedFolder.due_date)}</TableCell>
+                <TableCell>{formatDate(selectedProject.due_date)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

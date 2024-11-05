@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { db } from "../index.js";
+import { db } from "../db/connectDB.js";
 import { z } from "zod";
 import nodemailer from "nodemailer";
 
@@ -20,9 +20,9 @@ const registerSchema = z.object({
   email: z.string().email("Invalid email").min(1, "Email is required"),
 });
 
-async function getEmployees(req, res) {
-  try {
-    const employees = await db`SELECT id, name, email, role, experience FROM Employee`; // Select necessary fields
+export async function getEmployees(req, res) {
+  try {    
+    const employees = await db`SELECT id, name, email, skill, experience FROM Employee`; // Select necessary fields
     return res.json(employees); // Return employee data as JSON
   } catch (err) {
     console.error("Error retrieving employees:", err);
@@ -31,8 +31,8 @@ async function getEmployees(req, res) {
 }
 
 
-async function registerEmployee(req, res) {
-    const { name, email } = registerSchema.parse(req.body); // Only name and email required
+export async function registerEmployee(req, res) {
+    const { name, email} = registerSchema.parse(req.body); // Only name and email required
   
     if (!name || !email) {
       return res.status(400).send("All fields are required");
@@ -46,8 +46,10 @@ async function registerEmployee(req, res) {
   
       const defaultPassword = "12345678"; 
       const hash = await bcrypt.hash(defaultPassword, saltRounds);
+
+      console.log(name, email, hash);
   
-      await db`INSERT INTO Employee (name, email, password, role) VALUES (${name}, ${email}, ${hash}, 'employee')`;
+      await db`INSERT INTO Employee (name, email, password) VALUES (${name}, ${email}, ${hash})`;
   
       // Send a welcome email with the employee's login details
       await transporter.sendMail({
@@ -77,4 +79,37 @@ async function registerEmployee(req, res) {
     }
   }
 
-  export {registerEmployee, getEmployees}
+
+  // Function to fetch data from PostgreSQL
+export async function empAdd(req, res) {
+    try {
+      // Access session data
+      const user = req.session.user;
+      const { skill } = req.body;
+      await db`UPDATE employee SET skill=${skill}  WHERE email=${user.email}`;
+  
+      res.send("Updated...")
+  
+    } catch (err) {
+      // Handle any errors
+      console.error('Error fetching data:', err);
+      res.status(500).send('Server error');
+    }
+  };
+  
+//Function to change role from employee to project manager
+export async function updateRole(req, res) {
+    const { id, role } = req.body; // Get id and role from request body
+
+    if (!id || !role) {
+        return res.status(400).send("All fields are required");
+    }
+
+    try {
+        await db`UPDATE Employee SET role = ${role} WHERE id = ${id}`; // added role with ENUM('Team Lead', 'Member') DEFAULT 'Member' to emp table
+        return res.send("Role updated successfully");
+    } catch (err) {
+        console.error("Error updating role:", err);
+        return res.status(500).send("Error updating role");
+    }
+}

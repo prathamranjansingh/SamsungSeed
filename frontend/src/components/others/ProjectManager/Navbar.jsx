@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   // State to track the selected route
-  const [selected, setSelected] = useState('/projectmgr/home');
+  const [selected, setSelected] = useState('/projectmanager/home');
 
   const baseClassName = "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary";
   const activeClassName = "flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-primary transition-all hover:text-primary";
@@ -28,42 +28,42 @@ const Navbar = () => {
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             <Link
-              to="/projectmgr/home"
-              className={selected === "/projectmgr/home" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/home")}
+              to="/projectmanager/home"
+              className={selected === "/projectmanager/home" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/home")}
             >
               <Home className="h-4 w-4" />
               Dashboard
             </Link>
            
             <Link
-              to="/projectmgr/tasks"
-              className={selected === "/projectmgr/tasks" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/tasks")}
+              to="/projectmanager/tasks"
+              className={selected === "/projectmanager/tasks" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/tasks")}
             >
               <Package className="h-4 w-4" />
               Tasks
             </Link>
             <Link
-              to="/projectmgr/employee"
-              className={selected === "/projectmgr/employee" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/employee")}
+              to="/projectmanager/employee"
+              className={selected === "/projectmanager/employee" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/employee")}
             >
               <Users className="h-4 w-4" />
               Employee
             </Link>
             <Link
-              to="/projectmgr/attendance"
-              className={selected === "/projectmgr/attendance" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/attendance")}
+              to="/projectmanager/attendance"
+              className={selected === "/projectmanager/attendance" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/attendance")}
             >
               <CalendarCheck  className="h-4 w-4" />
               Attendance
             </Link>
             <Link
-              to="/projectmgr/analytics"
-              className={selected === "/projectmgr/analytics" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/analytics")}
+              to="/projectmanager/analytics"
+              className={selected === "/projectmanager/analytics" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/analytics")}
             >
               <LineChart className="h-4 w-4" />
               Analytics

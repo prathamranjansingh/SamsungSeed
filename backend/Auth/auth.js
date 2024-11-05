@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { db } from "../index.js";
+import { db } from "../db/connectDB.js";
 import nodemailer from "nodemailer";
 import { z } from "zod";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -50,7 +50,7 @@ async function login(req, res) {
     const { email, password } = loginSchema.parse(req.body);
 
     // Check if user exists in Admin table
-    let results = await db`SELECT * FROM Admin WHERE admin_email = ${email}`;
+    let results = await db`SELECT * FROM Admin WHERE email = ${email}`;
     if (results.length > 0) {
       const user = results[0];
       const isMatch = await bcrypt.compare(password, user.password);
@@ -64,21 +64,37 @@ async function login(req, res) {
     }
 
     // Check if user exists in Employee table
+    // results = await db`SELECT * FROM Employee WHERE email = ${email}`;
+    // if (results.length > 0) {
+    //   const user = results[0];
+    //   const isMatch = await bcrypt.compare(password, user.password);
+    //   if (isMatch) {
+    //     const token = jwt.sign(
+    //       { id: user.email, role: "employee" },
+    //       process.env.JWT_SECRET
+    //     );
+    //     req.session.user = { email: user.email };
+    //     return res.status(200).json({ success: true, token, role: "employee"});
+    //   }
+    // }
+
+    //check if the user exists in the Employee table as a employee
     results = await db`SELECT * FROM Employee WHERE email = ${email}`;
     if (results.length > 0) {
       const user = results[0];
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
         const token = jwt.sign(
-          { id: user.email, role: "employee" },
+          { id: user.email, role: "employee" }, 
           process.env.JWT_SECRET
         );
-        req.session.user = { email: user.email };
-        return res.status(200).json({ success: true, token, role: "employee"});
+        return res.status(200).json({ success: true, token, role: "employee" });
       }
+      // employee
     }
 
-    results = await db`SELECT * FROM TeamLead WHERE email = ${email}`;
+    // Check if user exists in Team Lead table
+    results = await db`SELECT * FROM Teamlead WHERE email = ${email}`;
     if (results.length > 0) {
       const user = results[0];
       const isMatch = await bcrypt.compare(password, user.password);
@@ -90,6 +106,22 @@ async function login(req, res) {
         return res
           .status(200)
           .json({ success: true, token, role: "teamlead" });
+      }
+    }
+
+    //check if user exists in employee table as project manager
+    results = await db`SELECT * FROM Projectmanager WHERE email = ${email}`;
+    if (results.length > 0) {
+      const user = results[0];
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        const token = jwt.sign(
+          { id: user.email, role: "projectmanager" },
+          process.env.JWT_SECRET
+        );
+        return res
+          .status(200)
+          .json({ success: true, token, role: "projectmanager" });
       }
     }
 
@@ -116,10 +148,17 @@ async function resetPassword(req, res) {
       return res.status(400).send("Passwords don't match");
     }
 
-    const result = await db`SELECT * FROM Employee WHERE email = ${id}`;
-    if (result.length === 0) {
-      return res.status(404).send("User not found");
-    }
+    let result = await db`
+  SELECT 'Employee' AS role FROM Employee WHERE email = ${id}
+  UNION ALL
+  SELECT 'Teamlead' AS role FROM Teamlead WHERE email = ${id}
+  UNION ALL
+  SELECT 'Projectmanager' AS role FROM Projectmanager WHERE email = ${id}
+`;
+
+if (result.length === 0) {
+  return res.status(404).send("User not found");
+}
 
     const user = result[0];
     const secret = process.env.JWT_SECRET + user.password;
@@ -128,8 +167,18 @@ async function resetPassword(req, res) {
     jwt.verify(token, secret);
 
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-    await db`UPDATE Employee SET password = ${hashedPassword} WHERE email = ${id}`;
-    return res.send("Password has been updated");
+    const userRole = result[0].role;  // Get the role of the user
+
+    if (userRole === 'Employee') {
+      await db`UPDATE Employee SET password = ${hashedPassword} WHERE email = ${id}`;
+    } else if (userRole === 'Teamlead') {
+      await db`UPDATE Teamlead SET password = ${hashedPassword} WHERE email = ${id}`;
+    } else if (userRole === 'Projectmanager') {
+      await db`UPDATE Projectmanager SET password = ${hashedPassword} WHERE email = ${id}`;
+    }
+
+    // Send success response
+    return res.status(200).send("Password updated successfully");
   } catch (err) {
     if (err instanceof z.ZodError) {
       return res.status(400).send(err.errors);
@@ -152,9 +201,8 @@ async function forgotPassword(req, res) {
     const user = result[0];
     const secret = process.env.JWT_SECRET + user.password;
     const token = jwt.sign({ email: user.email }, secret, { expiresIn: "10m" });
-    const resetLink = `http://localhost:3000/api/reset-password/${
-      user.email
-    }/${encodeURIComponent(token)}`;
+    const resetLink = `http://localhost:3000/api/reset-password/${user.email
+      }/${encodeURIComponent(token)}`;
 
     await transporter.sendMail({
       to: email,

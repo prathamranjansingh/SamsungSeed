@@ -22,7 +22,7 @@ const Header = () => {
     window.location.href = '/login'; // Redirect to the login page after logout
   };
   // State to track the selected menu item
-  const [selected, setSelected] = useState('/projectmgr/home');
+  const [selected, setSelected] = useState('/projectmanager/home');
 
   // Define the classNames
   const baseClassName = "mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground";
@@ -48,42 +48,42 @@ const Header = () => {
               <span className="sr-only">Acme Inc</span>
             </Link>
             <Link
-              to="/projectmgr/home"
-              className={selected === "/projectmgr/home" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/home")}
+              to="/projectmanager/home"
+              className={selected === "/projectmanager/home" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/home")}
             >
               <Home className="h-5 w-5" />
               Dashboard
             </Link>
             
             <Link
-              to="/projectmgr/tasks"
-              className={selected === "/projectmgr/tasks" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/tasks")}
+              to="/projectmanager/tasks"
+              className={selected === "/projectmanager/tasks" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/tasks")}
             >
               <Package className="h-5 w-5" />
               Tasks
             </Link>
             <Link
-              to="/projectmgr/employee"
-              className={selected === "/projectmgr/employee" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/employee")}
+              to="/projectmanager/employee"
+              className={selected === "/projectmanager/employee" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/employee")}
             >
               <Users className="h-5 w-5" />
               Employee
             </Link>
             <Link
-              to="/projectmgr/attendance"
-              className={selected === "/projectmgr/attendance" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/attendance")}
+              to="/projectmanager/attendance"
+              className={selected === "/projectmanager/attendance" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/attendance")}
             >
               <CalendarCheck  className="h-5 w-5" />
               Attendance
             </Link>
             <Link
-              to="/projectmgr/analytics"
-              className={selected === "/projectmgr/analytics" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmgr/analytics")}
+              to="/projectmanager/analytics"
+              className={selected === "/projectmanager/analytics" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/analytics")}
             >
               <LineChart className="h-5 w-5" />
               Analytics

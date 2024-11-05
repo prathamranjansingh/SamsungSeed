@@ -5,9 +5,7 @@ import dotenv from 'dotenv';
 import { router } from './routes/route.js';
 import session from 'express-session';
 dotenv.config();
-
-import postgres from 'postgres';
-
+import { db, connectToDatabase } from './db/connectDB.js';
 let { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID } = process.env;
 
 export const app = express();
@@ -20,28 +18,19 @@ app.use(session({
     saveUninitialized: false
 }));
 
-const db = postgres({
-    host: PGHOST,
-    database: PGDATABASE,
-    username: PGUSER,
-    password: PGPASSWORD,
-    port: 5432,
-    ssl: 'require',
-    connection: {
-        options: `project=${ENDPOINT_ID}`,
-    },
-});
+app.use(session({
+    secret : process.env.SESSION_SECRET || 'secret',
+    resave : false,
+    saveUninitialized : false,
+    cookie : { secure : false }     // true for https
+}))
 
-console.log('Connected to PostgreSQL');
 
-app.get('/', (req, res) => {
-    res.send("Hello, world!");
-});
 app.use('/api', router);
 
 const PORT = process.env.PORT || 3000;
+connectToDatabase();
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-export { db };
