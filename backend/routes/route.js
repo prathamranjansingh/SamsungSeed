@@ -5,11 +5,11 @@ import multer from 'multer';
 import { adminRegister } from '../controllers/admin.js';
 import {registerEmployee, getEmployees, empAdd, updateRole } from '../controllers/client.js'
 import { handleAttendanceUpload, handleGetAttendance } from '../controllers/attendance.js';
-import { createTeam,checkTeamLead,deleteTeam, getTeams } from '../controllers/teams.js';
+import { createTeam,checkTeamLead,deleteTeam, getTeams, getTaskUnassignedTeams } from '../controllers/teams.js';
 import { createProject, deleteProject, editDueDate, getProject, getAllProjects} from '../controllers/project.js';
 import { countTeamLeadStats, getTeamLead, fetchTeamLead, updateTeamLead } from '../controllers/teamlead.js';
 import { updateprojectmanager , getProjectManager} from '../controllers/projectmanager.js';
-
+import { createTask, deleteTask, getTasks } from '../controllers/tasks.js';
 
 
 import { login, resetPassword } from '../Auth/auth.js';
@@ -49,9 +49,16 @@ router.get('/getLeadDetails', countTeamLeadStats); //@-- working ---??
 router.post('/update-role', updateRole); //@-- working
 // router.get('/check-teamLead', checkTeamLead);
  router.get('/getTeams', getTeams); //@-- working
+router.get('/getUnassignedTeams',getTaskUnassignedTeams)
+
  router.get('/getProjects', getAllProjects); //@-- working
 
 router.post('/upload', upload.single('file'), handleAttendanceUpload);
 router.get('/attendance', handleGetAttendance);
+
+
+router.post('/create-task', createTask);
+router.get('/getTasks', getTasks);
+router.post('/delete-task', deleteTask);
 
 export { router };

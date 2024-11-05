@@ -56,6 +56,15 @@ export async function createTeam(req, res) {
 
         const { team_name, team_lead_id, members } = req.body;
 
+        //fetch the team lead details from Employee table
+        const teamLeadDetails = await db`SELECT id, name, email, password, skill, experience FROM Employee WHERE id = ${team_lead_id}`;
+
+        //add the team lead details to TeamLead table
+        await db`INSERT INTO TeamLead (id, name, email, password, skill, experience) VALUES (${teamLeadDetails[0].id}, ${teamLeadDetails[0].name}, ${teamLeadDetails[0].email}, ${teamLeadDetails[0].password}, ${teamLeadDetails[0].skill}, ${teamLeadDetails[0].experience})`;
+
+        //delete it from Employee table
+        await db`DELETE FROM Employee WHERE id = ${team_lead_id}`;
+
         // Validate required fields
         if (!team_name || !team_lead_id || !members) {
             return res.status(400).send("Please provide team name, team lead id, and members");
@@ -111,20 +120,100 @@ export async function deleteTeam(req, res) {
         return res.status(500).send("Database error");
     }
 }
+
+
+// Function to get all teams
 // Function to get all teams
 export async function getTeams(req, res) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Not Authorized. Please login again.",
+        });
+    }
+
+    const token = authHeader.split(" ")[1];
+    let user;
+
     try {
-        const teams = await db`SELECT id, team_name  FROM Teams`;
-        //store it in an array
-        // let teamNames = [];
-        // for (let i = 0; i < teams.length; i++) {
-        //     teamNames.push(teams[i].team_name);
-        // }
-        const team = teams.map(team => ({ id: team.id, name: team.team_name }));
-        //console.log("Teams:", team);
-        return res.status(200).json({team});
+        // Verify JWT and extract user information
+        user = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Decoded user:", user);
+
+        // Fetch project manager ID from Employee table using the user's email
+        const projectManagerResult = await db`SELECT id FROM projectmanager WHERE email = ${user.id}`;
+        if (projectManagerResult.length === 0) {
+            return res.status(404).send("Project manager not found");
+        }
+        const projectManagerId = projectManagerResult[0].id;
+        
+        // Fetch all teams managed by the project manager
+        const teams = await db`SELECT * FROM teams WHERE project_manager_id = ${projectManagerId}`;
+        console.log("teamNaya ", teams);
+        
+        return res.status(200).send(teams);
     } catch (err) {
         console.error("Error fetching teams:", err);
         return res.status(500).send("Database error");
+    }
+}
+
+//ney 
+
+
+export async function getTaskUnassignedTeams(req, res) {
+    const authHeader = req.headers.authorization;
+
+    // Check for Authorization header
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Not Authorized. Please login again.",
+        });
+    }
+
+    const token = authHeader.split(" ")[1];
+    let user;
+
+    try {
+        // Verify JWT and extract user information
+        user = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Decoded user:", user);
+
+        // Fetch project manager ID from the projectmanager table using the user's email
+        const projectManagerResult = await db`SELECT id FROM projectmanager WHERE email = ${user.id}`;
+        if (projectManagerResult.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Project manager not found.",
+            });
+        }
+        
+        
+        const projectManagerId = projectManagerResult[0].id;
+        
+        
+        // Fetch all teams managed by the project manager that have no tasks assigned
+        const teams = await db`
+            SELECT t.*
+            FROM teams t
+            LEFT JOIN tasks ts ON t.id = ts.team_id
+            WHERE t.project_manager_id = ${projectManagerId} AND ts.id IS NULL
+        `;
+        console.log("Teams with no tasks:", teams);
+
+        // Send back the teams in the response
+        return res.status(200).json({
+            success: true,
+            teams: teams,
+        });
+    } catch (err) {
+        console.error("Error fetching teams:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error.",
+        });
     }
 }

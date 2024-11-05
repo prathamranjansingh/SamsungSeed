@@ -4,6 +4,12 @@ import { db } from "../db/connectDB.js";
 export async function createProject(req, res) {
     try{
         const {project_name, employee_id,due_date} = req.body;
+
+        //check if employee_id is in employee table
+        const checkEmployee = await db`SELECT * FROM Employee WHERE id = ${employee_id}`;
+        if(checkEmployee.length === 0){
+            return res.status(404).send("Employee not found");
+        }
         
         if(!project_name || !employee_id || !due_date){
             return res.status(400).send("Missing required fields");
@@ -11,7 +17,7 @@ export async function createProject(req, res) {
 
         //get employee details
         const projectManager = await db`SELECT id,name,email,password,skill,experience FROM Employee WHERE id = ${employee_id}`;
-        console.log(projectManager);
+        // console.log(projectManager);
 
         //delete employee from employee table
         await db`DELETE FROM Employee WHERE id = ${employee_id}`;
@@ -118,11 +124,11 @@ export const getProject = async (req, res) => {
   
     try {
       const result = await db`
-        SELECT p.project_name, t.team_lead_id, t.team_members,  p.due_date
-        FROM projects p
-        JOIN teams t ON p.team_id = t.id
-        WHERE p.id = ${projectId};
+        SELECT * from Projects WHERE id = ${projectId}
       `;
+
+    //   console.log(result);
+      
   
       if (result.length === 0) {
         return res.status(404).json({ error: 'Project not found' });
