@@ -10,7 +10,7 @@ import { createProject, deleteProject, editDueDate, getProject, getAllProjects} 
 import { countTeamLeadStats, getTeamLead, fetchTeamLead, updateTeamLead, getTeamLeadTasks } from '../controllers/teamlead.js';
 import { updateprojectmanager , getProjectManager} from '../controllers/projectmanager.js';
 import { createTask, deleteTask, getTasks } from '../controllers/tasks.js';
-import { assignWork, getEmployeesToAssign } from "../controllers/empwork.js"
+import { assignWork, getEmployeesToAssign, getEmployeesWorkFolder } from "../controllers/empwork.js"
 
 import { login, resetPassword } from '../Auth/auth.js';
 import { forgotPassword } from '../utils/mailSend.js';
@@ -77,5 +77,7 @@ router.get('/getempDetails',getEmployeeTeamProjectDetails)
 //WORK EMPLOYEE
 router.post('/assignWork', assignWork);
 router.get('/displayEmployees', getEmployeesToAssign);
+router.get('/folderPath', getEmployeesWorkFolder)
+
 
 export { router };

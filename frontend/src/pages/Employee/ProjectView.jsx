@@ -1,6 +1,5 @@
-'use client'
-
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import axios from 'axios'  // Don't forget to import axios
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,7 +17,7 @@ import {
 import { Copy, Check } from 'lucide-react'
 
 export function ProjectView() {
-  const [teamLeadPath, setTeamLeadPath] = useState('/path/to/server/provided/by/teamlead')
+  const [teamLeadPath, setTeamLeadPath] = useState('')
   const [serverPath, setServerPath] = useState('')
   const [totalImages, setTotalImages] = useState(0)
   const [isTaskComplete, setIsTaskComplete] = useState(false)
@@ -27,6 +26,27 @@ export function ProjectView() {
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const teamLeadPathRef = useRef(null)
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Make sure to get the token dynamically
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/folderPath`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        console.log(response.data);
+        
+        setTeamLeadPath(response.data.folderPath)  // Set the response data to state
+      } catch (err) {
+        console.error('Error fetching team data:', err)  
+      }
+    }
+    
+    fetchTeamData();  // Call the function to fetch data
+  }, [])  // Empty dependency array to ensure it runs only once
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -45,14 +65,19 @@ export function ProjectView() {
   }
 
   const copyTeamLeadPath = () => {
-    if (teamLeadPathRef.current) {
-      teamLeadPathRef.current.select()
-      document.execCommand('copy')
-      setIsCopied(true)
-      setIsCopyModalOpen(true)
-      setTimeout(() => setIsCopied(false), 2000)
+    if (teamLeadPath) {
+      navigator.clipboard.writeText(teamLeadPath)
+        .then(() => {
+          setIsCopied(true);
+          setIsCopyModalOpen(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        })
+        .catch((err) => {
+          console.error('Error copying text: ', err);
+        });
     }
   }
+  
 
   return (
     <div className="container mx-auto p-4">
@@ -85,18 +110,7 @@ export function ProjectView() {
                   </Button>
                 </div>
               </div>
-             
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="totalImages">Total Images</Label>
-                <Input 
-                  id="totalImages" 
-                  type="number"
-                  placeholder="Enter total number of images"
-                  value={totalImages}
-                  onChange={(e) => setTotalImages(parseInt(e.target.value))}
-                  required
-                />
-              </div>
+              
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="taskComplete" 
@@ -105,15 +119,7 @@ export function ProjectView() {
                 />
                 <Label htmlFor="taskComplete">Task Complete</Label>
               </div>
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="updateNote">Update Note</Label>
-                <Textarea 
-                  id="updateNote" 
-                  placeholder="Provide any additional updates or notes for your team lead"
-                  value={updateNote}
-                  onChange={(e) => setUpdateNote(e.target.value)}
-                />
-              </div>
+              
             </div>
           </form>
         </CardContent>
@@ -131,7 +137,6 @@ export function ProjectView() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="username" className="text-right">
                 Total Images

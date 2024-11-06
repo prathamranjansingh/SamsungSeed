@@ -102,3 +102,54 @@ export async function assignWork(req, res) {
         return res.status(403).json({ error: "Invalid token" });
     }
 }
+
+
+//
+
+export async function getEmployeesWorkFolder(req, res) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Not Authorized. Please login again.",
+        });
+    }
+
+    const token = authHeader.split(" ")[1];
+    let user;
+    try {
+        user = jwt.verify(token, process.env.JWT_SECRET);
+
+      const email = user.id;  
+  
+      const employee = await db`
+        SELECT id
+        FROM employee
+        WHERE email = ${email}
+      `;
+      
+      if (employee.length === 0) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+  
+      const employeeId = employee[0].id;
+  
+      // Fetch the folder path assigned to the employee from the empwork table
+      const empwork = await db`
+        SELECT folder_path
+        FROM empwork
+        WHERE team_member_id = ${employeeId}
+      `;
+  
+      if (empwork.length === 0) {
+        return res.status(404).json({ message: "No folder assigned to this employee" });
+      }
+  
+      // Respond with the folder path
+      res.status(200).json({ folderPath: empwork[0].folder_path });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
