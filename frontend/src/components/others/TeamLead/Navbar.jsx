@@ -38,9 +38,9 @@ const Navbar = () => {
             </Link>
            
             <Link
-              to="/teamlead/projectdetail"
-              className={selected === "/teamlead/projectdetail" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/teamlead/projectdetail")}
+              to="/teamlead/distributework"
+              className={selected === "/teamlead/distributework" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/teamlead/distributework")}
             >
               <Package className="h-4 w-4" />
               Projects

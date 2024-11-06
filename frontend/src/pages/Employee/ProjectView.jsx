@@ -1,129 +1,176 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from '@/components/ui/progress' 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+'use client'
+
+import { useState, useRef } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Copy, Check } from 'lucide-react'
 
 export function ProjectView() {
-  const projects = [
-    {
-      id: 1,
-      name: "Website Redesign",
-      description: "Revamping the company's main website with a modern design and improved user experience.",
-      teamLead: "Alice Johnson",
-      teamMembers: [
-        { name: "John Doe", role: "Frontend Developer", avatar: "/placeholder.svg" },
-        { name: "Jane Smith", role: "UI/UX Designer", avatar: "/placeholder.svg" },
-        { name: "Mike Brown", role: "Backend Developer", avatar: "/placeholder.svg" },
-      ],
-      startDate: "2023-06-01",
-      endDate: "2023-12-31",
-      progress: 75,
-      status: "In Progress",
-    },
-    {
-      id: 2,
-      name: "Mobile App Development",
-      description: "Creating a new mobile app for customer engagement and support.",
-      teamLead: "Bob Wilson",
-      teamMembers: [
-        { name: "Alice Brown", role: "Mobile Developer", avatar: "/placeholder.svg" },
-        { name: "Charlie Davis", role: "Backend Developer", avatar: "/placeholder.svg" },
-        { name: "Eva Green", role: "QA Specialist", avatar: "/placeholder.svg" },
-      ],
-      startDate: "2023-07-15",
-      endDate: "2024-03-31",
-      progress: 40,
-      status: "In Progress",
-    },
-    {
-      id: 3,
-      name: "Data Analytics Platform",
-      description: "Developing a comprehensive data analytics platform for business intelligence.",
-      teamLead: "Carol Martinez",
-      teamMembers: [
-        { name: "David Lee", role: "Data Scientist", avatar: "/placeholder.svg" },
-        { name: "Emma Watson", role: "Backend Developer", avatar: "/placeholder.svg" },
-        { name: "Frank Miller", role: "Frontend Developer", avatar: "/placeholder.svg" },
-      ],
-      startDate: "2023-09-01",
-      endDate: "2024-06-30",
-      progress: 20,
-      status: "Planning",
-    },
-  ]
+  const [teamLeadPath, setTeamLeadPath] = useState('/path/to/server/provided/by/teamlead')
+  const [serverPath, setServerPath] = useState('')
+  const [totalImages, setTotalImages] = useState(0)
+  const [isTaskComplete, setIsTaskComplete] = useState(false)
+  const [updateNote, setUpdateNote] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
+  const teamLeadPathRef = useRef(null)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setIsModalOpen(true)
+  }
+
+  const confirmSubmit = () => {
+    console.log({
+      serverPath,
+      totalImages,
+      isTaskComplete,
+      updateNote
+    })
+    setIsModalOpen(false)
+    alert('Update submitted successfully!')
+  }
+
+  const copyTeamLeadPath = () => {
+    if (teamLeadPathRef.current) {
+      teamLeadPathRef.current.select()
+      document.execCommand('copy')
+      setIsCopied(true)
+      setIsCopyModalOpen(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    }
+  }
 
   return (
+    <div className="container mx-auto p-4">
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Employee Task Update</CardTitle>
+          <CardDescription>Update your task progress and provide information to your team lead.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit}>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="teamLeadPath">Team Lead Provided Path</Label>
+                <div className="flex">
+                  <Input 
+                    id="teamLeadPath"
+                    value={teamLeadPath}
+                    disabled
+                    className="flex-grow"
+                    ref={teamLeadPathRef}
+                  />
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="ml-2"
+                    onClick={copyTeamLeadPath}
+                  >
+                    {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+             
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="totalImages">Total Images</Label>
+                <Input 
+                  id="totalImages" 
+                  type="number"
+                  placeholder="Enter total number of images"
+                  value={totalImages}
+                  onChange={(e) => setTotalImages(parseInt(e.target.value))}
+                  required
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="taskComplete" 
+                  checked={isTaskComplete}
+                  onCheckedChange={(checked) => setIsTaskComplete(checked)}
+                />
+                <Label htmlFor="taskComplete">Task Complete</Label>
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="updateNote">Update Note</Label>
+                <Textarea 
+                  id="updateNote" 
+                  placeholder="Provide any additional updates or notes for your team lead"
+                  value={updateNote}
+                  onChange={(e) => setUpdateNote(e.target.value)}
+                />
+              </div>
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={handleSubmit}>Submit Update</Button>
+        </CardFooter>
+      </Card>
 
-    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-    <div className="flex items-center">
-      <h1 className="text-lg font-semibold md:text-2xl">Analytics
-      My Projects
-      </h1>
-    </div>
-    <div className="flex flex-1 p-4 items-center justify-center rounded-lg border border-dashed shadow-sm">
-      <div className="flex flex-col items-center gap-1 text-center">
-      <div className="space-y-6">
-     {projects.map((project) => (
-       <Card key={project.id}>
-         <CardHeader>
-           <CardTitle className="flex justify-between items-center">
-             <span>{project.name}</span>
-             <span className="text-sm font-normal text-muted-foreground">{project.status}</span>
-           </CardTitle>
-         </CardHeader>
-         <CardContent>
-           <div className="space-y-4">
-             <p className="text-muted-foreground">{project.description}</p>
-             <div>
-               <h4 className="font-semibold">Team Lead:</h4>
-               <p>{project.teamLead}</p>
-             </div>
-             <div>
-               <h4 className="font-semibold mb-2">Team Members:</h4>
-               <div className="flex flex-wrap gap-4">
-                 {project.teamMembers.map((member, index) => (
-                   <TooltipProvider key={index}>
-                     <Tooltip>
-                       <TooltipTrigger>
-                         <Avatar>
-                           <AvatarImage src={member.avatar} alt={member.name} />
-                           <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                         </Avatar>
-                       </TooltipTrigger>
-                       <TooltipContent>
-                         <p>{member.name}</p>
-                         <p className="text-sm text-muted-foreground">{member.role}</p>
-                       </TooltipContent>
-                     </Tooltip>
-                   </TooltipProvider>
-                 ))}
-               </div>
-             </div>
-             <div className="flex justify-between text-sm text-muted-foreground">
-               <span>Start Date: {project.startDate}</span>
-               <span>End Date: {project.endDate}</span>
-             </div>
-             <div>
-               <h4 className="font-semibold mb-2">Project Progress:</h4>
-               <div className="flex items-center space-x-4">
-                 <Progress value={project.progress} className="flex-1" />
-                 <span className="text-sm font-medium">{project.progress}%</span>
-               </div>
-             </div>
-           </div>
-         </CardContent>
-       </Card>
-     ))}
-   </div>
-      </div>
-    </div>
-</main>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Your Update</DialogTitle>
+            <DialogDescription>
+              Please review the information below before submitting your update.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Total Images
+              </Label>
+              <div className="col-span-3">{totalImages}</div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Task Complete
+              </Label>
+              <div className="col-span-3">{isTaskComplete ? 'Yes' : 'No'}</div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Update Note
+              </Label>
+              <div className="col-span-3">{updateNote}</div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button onClick={confirmSubmit}>Confirm and Submit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-   
+      <Dialog open={isCopyModalOpen} onOpenChange={setIsCopyModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Path Copied</DialogTitle>
+            <DialogDescription>
+              The team lead provided path has been copied to your clipboard.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setIsCopyModalOpen(false)}>OK</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

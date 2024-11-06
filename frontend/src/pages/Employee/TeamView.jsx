@@ -1,81 +1,109 @@
-import React from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 
 export function TeamView() {
-  const teams = [
-    {
-      id: 1,
-      name: "Frontend Development",
-      lead: "Alice Johnson",
-      members: [
-        { name: "John Doe", role: "Senior Developer", avatar: "/placeholder.svg" },
-        { name: "Jane Smith", role: "UI/UX Designer", avatar: "/placeholder.svg" },
-        { name: "Mike Johnson", role: "Junior Developer", avatar: "/placeholder.svg" },
-      ],
-      currentProject: "Website Redesign",
-      progress: 75,
-    },
-    {
-      id: 2,
-      name: "Backend Development",
-      lead: "Bob Wilson",
-      members: [
-        { name: "Alice Brown", role: "Senior Backend Developer", avatar: "/placeholder.svg" },
-        { name: "Charlie Davis", role: "Database Specialist", avatar: "/placeholder.svg" },
-      ],
-      currentProject: "API Optimization",
-      progress: 60,
-    },
-  ]
+  const [teamData, setTeamData] = useState(null) // Set initial state to null
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      try {
+        const token = localStorage.getItem('token') 
+
+        if (!token) {
+          setError('No token provided')
+          setLoading(false)
+          return
+        }
+
+        const backendUrl = import.meta.env.VITE_BACKEND_URL
+
+        const response = await axios.get(`${backendUrl}/getempDetails`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        // Assuming the response is an array, but you're accessing the first element:
+        console.log(response.data); // Check structure of the response
+
+        setTeamData(response.data[0]) // Set team data directly
+      } catch (err) {
+        console.error('Error fetching team data:', err)
+        setError('Error fetching team data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTeamData()
+  }, [])
+
+  const getTeamMembers = (members) => {
+    // Ensure members is an object before iterating
+    if (members && typeof members === 'object') {
+      return Object.entries(members).map(([id, name]) => ({ id, name }))
+    }
+    return []
+  }
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
+  if (error) {
+    return <div>{error}</div>
+  }
+
+  if (!teamData) {
+    return <div>No team data available.</div>
+  }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold">My Teams</h2>
-      {teams.map((team) => (
-        <Card key={team.id}>
-          <CardHeader>
-            <CardTitle>{team.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold">Team Lead:</h4>
-                <p>{team.lead}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Team Members:</h4>
-                <div className="flex flex-wrap gap-4">
-                  {team.members.map((member, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <Avatar>
-                        <AvatarImage src={member.avatar} alt={member.name} />
-                        <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.role}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold">Current Project:</h4>
-                <p>{team.currentProject}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Project Progress:</h4>
-                <div className="flex items-center space-x-4">
-                  <Progress value={team.progress} className="flex-1" />
-                  <span className="text-sm font-medium">{team.progress}%</span>
-                </div>
-              </div>
+    <div className="container mx-auto p-4">
+      <Card key={teamData.id} className="mb-6">
+        <CardHeader>
+          <CardTitle>{teamData.team_name}</CardTitle>
+          <CardDescription>Project: {teamData.project_name}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold">Team Lead</h3>
+            <p>{teamData.team_lead_name}</p>
+          </div>
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold">Team Members</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Name</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {getTeamMembers(teamData.team_members).map((member) => (
+                  <TableRow key={member.id}>
+                    <TableCell>{member.id}</TableCell>
+                    <TableCell>{member.name}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Tasks</h3>
+            <div className="flex flex-wrap gap-2">
+              {teamData.tasks.map((task, index) => (
+                <Badge key={index} variant="secondary">{task}</Badge>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

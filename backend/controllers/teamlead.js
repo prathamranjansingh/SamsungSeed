@@ -1,6 +1,7 @@
 import { db } from "../db/connectDB.js";// Adjust path if necessary
 import { z } from "zod";
 import nodemailer from "nodemailer";
+import jwt from 'jsonwebtoken';
 
 export const countTeamLeadStats = async (req, res) => {
   const { teamLeadId } = req.body;
@@ -109,5 +110,106 @@ export async function updateTeamLead(req, res){
     } catch (err) {
         console.error("Error updating team lead:", err);
         return res.status(500).send("Error updating team lead");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+//NEW TEAM LEAD ROUTESSSSS
+
+export async function getTeamLeadTasks(req, res) {
+    // Extract token from Authorization header
+    const token = req.headers['authorization']?.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+
+    try {
+        // Verify the JWT token and extract the decoded information
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Decoded JWT:", decoded); // Log the decoded token for debugging
+
+        const teamLeadEmail = decoded.id; // Assuming the JWT contains the email field
+
+        // Step 1: Get the team lead ID using the email from the token
+        const teamLeadResult = await db`
+            SELECT id FROM teamlead WHERE email = ${teamLeadEmail}
+        `;
+
+        if (teamLeadResult.length === 0) {
+            return res.status(404).json({ success: false, message: 'Team lead not found' });
+        }
+
+        const teamLeadId = teamLeadResult[0].id; // Get the team lead ID from the result
+
+        // Step 2: Query to get task details for the team lead
+        const tasks = await db`
+            SELECT
+                t.id AS task_id,
+                t.team_lead_id,
+                t.team_id,
+                t.task_name,
+                t.due_date,
+                tm.id AS member_id,
+                tm.name AS member_name,
+                ew.folder_path
+            FROM
+                tasks t
+                LEFT JOIN teams te ON te.id = t.team_id
+                LEFT JOIN employee tm ON tm.id = ANY(te.team_members)
+                LEFT JOIN empwork ew ON ew.team_member_id = tm.id AND ew.team_lead_id = t.team_lead_id
+            WHERE
+                t.team_lead_id = ${teamLeadId}
+        `;
+
+        // Step 3: Organize the tasks with the correct structure
+        const tasksWithFolders = tasks.reduce((acc, task) => {
+            let taskEntry = acc.find((t) => t.task_id === task.task_id);
+
+            if (!taskEntry) {
+                taskEntry = {
+                    team_lead_id: task.team_lead_id,
+                    team_id: task.team_id,
+                    task_id: task.task_id,
+                    task_name: task.task_name,
+                    due_date: task.due_date,
+                    team_members: [],
+                    folders: [],
+                };
+                acc.push(taskEntry);
+            }
+
+            if (task.member_id && task.member_name) {
+                taskEntry.team_members.push({
+                    id: task.member_id,
+                    name: task.member_name,
+                });
+            }
+
+            if (task.folder_path) {
+                taskEntry.folders.push({
+                    path: task.folder_path,
+                    assignedTo: task.member_id,
+                });
+            }
+
+            return acc;
+        }, []);
+
+        // Send the structured data back to the client
+        res.json({ tasksWithFolders });
+
+    } catch (error) {
+        // Handle errors like token verification or database errors
+        console.error("Error fetching team lead tasks:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch tasks." });
     }
 }

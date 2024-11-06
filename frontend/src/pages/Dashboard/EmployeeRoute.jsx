@@ -3,10 +3,8 @@ import Layout from '../../components/others/Employee/Layout';
 import {DashboardContent} from '../Employee/DashboardContent'
 import {TeamView} from '../Employee/TeamView'
 import {TaskView} from '../Employee/TaskView'
-import {AnalyticsView} from '../Employee/AnalyticsView'
-import {ProjectView} from '../Employee/ProjectView'
 import {EmployeeAttendance} from '../Employee/EmployeeAttendance'
-
+import {ProjectView} from '../Employee/ProjectView'
 
 const EmployeeRoute = () => {
   return (
@@ -16,7 +14,7 @@ const EmployeeRoute = () => {
         <Route path="/projects" element={<ProjectView />} />
         <Route path="/tasks" element={<TaskView />} />
         <Route path="/team" element={<TeamView />} />
-        <Route path="/analytics" element={<AnalyticsView />} />
+
         <Route path="/attendance" element={<EmployeeAttendance/>} />
       </Route>
     </Routes>

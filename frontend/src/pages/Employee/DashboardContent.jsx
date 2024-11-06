@@ -34,7 +34,7 @@ export function DashboardContent() {
     const fetchEmployeeData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${backendUrl}/employees`, {
+        const response = await axios.get(`${backendUrl}/personalEmpDetail`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -57,14 +57,15 @@ export function DashboardContent() {
   const handleSaveClick = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${backendUrl}/emp-add`, { content: skill }, {
+      await axios.post(`${backendUrl}/emp-add`,
+        { skill: skill }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       setIsEditing(false); // Exit edit mode
       // Optionally, refetch data to reflect changes
-      const response = await axios.get(`${backendUrl}/employees`, {
+      const response = await axios.get(`${backendUrl}/personalEmpDetail`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -111,7 +112,7 @@ export function DashboardContent() {
                 <AvatarFallback>{employeeData?.name ? employeeData.name[0] : 'E'}</AvatarFallback>
               </Avatar>
               <div className="space-y-1">
-                <p className="text-xl">{employeeData?.role || 'N/A'}</p>
+
                 <div className="flex items-center">
                   <p className="text-muted-foreground">Skill: </p>
                   {isEditing ? (

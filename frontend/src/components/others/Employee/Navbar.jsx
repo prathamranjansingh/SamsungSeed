@@ -13,7 +13,6 @@ const sidebarItems = [
   { icon: Package, label: 'Projects', path: '/employee/projects' },
   { icon: ShieldCheck, label: 'Tasks', path: '/employee/tasks' },
   { icon: Users, label: 'Team', path: '/employee/team' },
-  { icon: BarChart2, label: 'Analytics', path: '/employee/analytics' },
   { icon: Calendar, label: 'Attendance', path: '/employee/attendance' },
 ];
 

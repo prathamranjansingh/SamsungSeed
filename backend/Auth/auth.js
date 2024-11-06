@@ -63,22 +63,7 @@ async function login(req, res) {
       }
     }
 
-    // Check if user exists in Employee table
-    // results = await db`SELECT * FROM Employee WHERE email = ${email}`;
-    // if (results.length > 0) {
-    //   const user = results[0];
-    //   const isMatch = await bcrypt.compare(password, user.password);
-    //   if (isMatch) {
-    //     const token = jwt.sign(
-    //       { id: user.email, role: "employee" },
-    //       process.env.JWT_SECRET
-    //     );
-    //     req.session.user = { email: user.email };
-    //     return res.status(200).json({ success: true, token, role: "employee"});
-    //   }
-    // }
-
-    //check if the user exists in the Employee table as a employee
+    
     results = await db`SELECT * FROM Employee WHERE email = ${email}`;
     if (results.length > 0) {
       const user = results[0];

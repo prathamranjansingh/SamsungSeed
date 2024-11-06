@@ -57,9 +57,9 @@ const Header = () => {
             </Link>
             
             <Link
-              to="/teamlead/projectdetail"
-              className={selected === "/teamlead/projectdetail" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/teamlead/projectdetail")}
+              to="/teamlead/distributework"
+              className={selected === "/teamlead/distributework" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/teamlead/distributework")}
             >
               <Package className="h-5 w-5" />
               Projects
