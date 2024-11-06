@@ -86,14 +86,6 @@ const Header = () => {
               <CalendarCheck className="h-5 w-5" />
               Attendance
             </Link>
-            <Link
-              to="/employee/analytics"
-              className={selected === "/employee/analytics" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/employee/analytics")}
-            >
-              <LineChart className="h-5 w-5" />
-              Analytics
-            </Link>
           </nav>
         </SheetContent>
       </Sheet>

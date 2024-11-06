@@ -40,7 +40,7 @@ const Header = () => {
         <SheetContent side="left" className="flex font-space flex-col">
           <nav className="grid gap-2 text-lg font-medium">
             <Link
-              to="/"
+              to="/projectmanager/home"
               className={selected === "/" ? activeClassName : baseClassName}
               onClick={() => setSelected("/")}
             >
@@ -65,12 +65,12 @@ const Header = () => {
               Tasks
             </Link>
             <Link
-              to="/projectmanager/employee"
-              className={selected === "/projectmanager/employee" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmanager/employee")}
+              to="/projectmanager/team"
+              className={selected === "/projectmanager/team" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/team")}
             >
               <Users className="h-5 w-5" />
-              Employee
+              Team
             </Link>
             <Link
               to="/projectmanager/attendance"

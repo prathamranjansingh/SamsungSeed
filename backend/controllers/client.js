@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { db } from "../db/connectDB.js";
 import { z } from "zod";
 import nodemailer from "nodemailer";
-
+import jwt from "jsonwebtoken"
 const saltRounds = parseInt(process.env.SALT, 10) || 10;
 const transporter = nodemailer.createTransport({
   secure: true,
@@ -21,14 +21,42 @@ const registerSchema = z.object({
 });
 
 export async function getEmployees(req, res) {
-  try {    
-    const employees = await db`SELECT id, name, email, skill, experience FROM Employee`; // Select necessary fields
+  try {
+    const employees = await db`
+      SELECT id, name, email, skill, experience
+      FROM Employee
+      WHERE id NOT IN (
+        SELECT UNNEST(team_members) FROM Teams
+      )
+    `;
+    return res.json(employees); // Return employee data as JSON
+  } catch (err) {
+    console.error("Error retrieving employees:", err);
+    return res.status(500).send("Error retrieving employees");
+  }
+}
+
+export async function getOwnEmployeeDetail(req, res) {
+  const token = req.headers['authorization']?.split(' ')[1];
+
+  if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+  }
+
+
+  try { 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+       
+    const employees = await db`SELECT id, name, email, skill, experience FROM Employee where email = ${decoded.id}`; // Select necessary fields
     return res.json(employees); // Return employee data as JSON
   } catch (err) {
     console.error("Error retrieving employees:", err);
     return res.status(500).send("Error retrieving employees");
   }
 }
+
+
+
 
 
 export async function registerEmployee(req, res) {
@@ -81,12 +109,19 @@ export async function registerEmployee(req, res) {
 
 
   // Function to fetch data from PostgreSQL
-export async function empAdd(req, res) {
+export async function empSkillAdd(req, res) {
     try {
       // Access session data
-      const user = req.session.user;
+      const token = req.headers['authorization']?.split(' ')[1];
+
+      if (!token) {
+          return res.status(401).json({ success: false, message: 'No token provided' });
+      }
+      
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
       const { skill } = req.body;
-      await db`UPDATE employee SET skill=${skill}  WHERE email=${user.email}`;
+      await db`UPDATE employee SET skill=${skill}  WHERE email=${decoded.id}`;
   
       res.send("Updated...")
   
@@ -112,4 +147,67 @@ export async function updateRole(req, res) {
         console.error("Error updating role:", err);
         return res.status(500).send("Error updating role");
     }
+}
+
+
+// new endpoint
+
+export async function getEmployeeTeamProjectDetails(req, res)  {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+          success: false,
+          message: "Not Authorized. Please login again.",
+      });
+  }
+
+  const token = authHeader.split(" ")[1];
+  let user;
+  try {
+      user = jwt.verify(token, process.env.JWT_SECRET);
+      const Email = user.id;
+      const Employee = await db`SELECT id FROM employee WHERE email = ${Email}`;
+      const empId = Employee[0].id;
+      
+      if (!empId) {
+          return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const result = await db`
+      SELECT 
+          te.id, 
+          te.team_name,
+          tl.name AS team_lead_name,
+          pr.project_name,
+          json_object_agg(em.id, em.name) AS team_members,
+          json_agg(DISTINCT ts.task_name) AS tasks
+      FROM 
+          teams AS te
+      JOIN 
+          employee AS em ON em.id = ANY(te.team_members)
+      JOIN 
+          teamlead AS tl ON te.team_lead_id = tl.id
+      JOIN 
+          tasks AS ts ON ts.team_id = te.id
+      JOIN 
+          projects AS pr ON pr.id = ts.project_id
+      WHERE 
+          ${empId} = ANY(te.team_members)
+      GROUP BY 
+          te.id, tl.name, pr.project_name
+      `;
+
+      if (result.length === 0) {
+          return res.status(404).json({ message: "No team found for this employee" });
+      }
+
+      return res.status(200).json(result);
+  } catch (error) {
+      console.error('Error fetching team:', error);
+      return res.status(500).json({
+          message: "Internal server error",
+          error: error.message
+      });
+  }
 }

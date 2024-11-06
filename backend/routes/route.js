@@ -3,14 +3,14 @@ import multer from 'multer';
 
 
 import { adminRegister } from '../controllers/admin.js';
-import {registerEmployee, getEmployees, empAdd, updateRole } from '../controllers/client.js'
+import {registerEmployee, getEmployees, updateRole, empSkillAdd, getOwnEmployeeDetail, getEmployeeTeamProjectDetails } from '../controllers/client.js'
 import { handleAttendanceUpload, handleGetAttendance } from '../controllers/attendance.js';
 import { createTeam,checkTeamLead,deleteTeam, getTeams, getTaskUnassignedTeams } from '../controllers/teams.js';
 import { createProject, deleteProject, editDueDate, getProject, getAllProjects} from '../controllers/project.js';
-import { countTeamLeadStats, getTeamLead, fetchTeamLead, updateTeamLead } from '../controllers/teamlead.js';
+import { countTeamLeadStats, getTeamLead, fetchTeamLead, updateTeamLead, getTeamLeadTasks } from '../controllers/teamlead.js';
 import { updateprojectmanager , getProjectManager} from '../controllers/projectmanager.js';
 import { createTask, deleteTask, getTasks } from '../controllers/tasks.js';
-
+import { assignWork, getEmployeesToAssign } from "../controllers/empwork.js"
 
 import { login, resetPassword } from '../Auth/auth.js';
 import { forgotPassword } from '../utils/mailSend.js';
@@ -33,9 +33,11 @@ router.get('/getProjectManager', getProjectManager);   //new
 router.post('/updateProjectManager', updateprojectmanager);  //new
 router.post('/fetchTeamLead', fetchTeamLead);  //new
 router.post('/updateTeamLead', updateTeamLead);  //new
-router.get('/getEmployees', getEmployees);     //same as fetchData
+router.get('/getEmployees', getEmployees);   
+router.get('/personalEmpDetail', getOwnEmployeeDetail)  //same as fetchData
 
-router.post('/emp-add',empAdd);
+
+router.post('/emp-add',empSkillAdd);
 router.post('/createTeam', authMiddleware, createTeam);
 router.post('/delete-team', deleteTeam);  
 router.post('/create-project', createProject); //@-- working (changed naming convention)
@@ -60,5 +62,20 @@ router.get('/attendance', handleGetAttendance);
 router.post('/create-task', createTask);
 router.get('/getTasks', getTasks);
 router.post('/delete-task', deleteTask);
+
+
+
+
+
+//team lead 
+
+router.get('/teamleadDetail', getTeamLeadTasks)
+
+
+router.get('/getempDetails',getEmployeeTeamProjectDetails)
+
+//WORK EMPLOYEE
+router.post('/assignWork', assignWork);
+router.get('/displayEmployees', getEmployeesToAssign);
 
 export { router };

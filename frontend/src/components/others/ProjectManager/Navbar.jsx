@@ -21,7 +21,7 @@ const Navbar = () => {
     <div className="hidden border-r bg-muted/40 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <Link to="/" className="flex items-center gap-2 font-semibold">
+          <Link to="/projectmanager/home" className="flex items-center gap-2 font-semibold">
             <span className="">Samsung Seed</span>
           </Link>
         </div>
@@ -45,12 +45,12 @@ const Navbar = () => {
               Tasks
             </Link>
             <Link
-              to="/projectmanager/employee"
-              className={selected === "/projectmanager/employee" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/projectmanager/employee")}
+              to="/projectmanager/team"
+              className={selected === "/projectmanager/team" ? activeClassName : baseClassName}
+              onClick={() => setSelected("/projectmanager/team")}
             >
               <Users className="h-4 w-4" />
-              Employee
+              Team
             </Link>
             <Link
               to="/projectmanager/attendance"

@@ -1,9 +1,10 @@
 import { Route, Routes } from 'react-router-dom';
 import Layout from '../../components/others/TeamLead/Layout';
-import ProjectDetail from '../TeamLead/ProjectDetail'
+
 import QualityCheckerPage from '../TeamLead/QualityChecking';
-import ProjectList from '../TeamLead/ProjectList';
+
 import EmployeeHome from '../TeamLead/Home';
+import DistributeWork from '../TeamLead/DistributeWork';
 Layout
 const TeamLeadRoute = () => {
   return (
@@ -11,8 +12,8 @@ const TeamLeadRoute = () => {
        <Routes>
        <Route element={<Layout />}>
        <Route path="home" element={<EmployeeHome />} />
-       <Route path="projectdetail" element={<ProjectList />} />
-       <Route path="projects/:projectId" element={<ProjectDetail />} />
+       <Route path="distributework" element={<DistributeWork />} />
+
       <Route path="quality" element={<QualityCheckerPage />} />
        </Route>
        </Routes>

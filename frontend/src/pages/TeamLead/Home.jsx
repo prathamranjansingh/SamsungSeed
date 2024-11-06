@@ -13,9 +13,9 @@ import {
 
 export default function EmployeeHome() {
     const projects = [
-        { id: 1, name: "Traffic Sign Recognition", progress: 75, totalImages: 1000, completedImages: 750, urgentReviews: 5 },
-        { id: 2, name: "Medical Imaging Analysis", progress: 60, totalImages: 800, completedImages: 480, urgentReviews: 2 },
-        { id: 3, name: "Satellite Imagery Labeling", progress: 40, totalImages: 1200, completedImages: 480, urgentReviews: 8 },
+        { id: 1, annotator: "Rahul", progress: 75, totalImages: 1000, completedImages: 750, urgentReviews: 5 },
+        { id: 2, annotator: "Shivam", progress: 60, totalImages: 800, completedImages: 480, urgentReviews: 2 },
+        { id: 3, annotator: "Keshav", progress: 40, totalImages: 1200, completedImages: 480, urgentReviews: 8 },
       ]
       const teamMembers = [
         { id: 1, name: "Alice Johnson", role: "Senior Annotator", performance: 95, avatar: "/avatars/alice.jpg" },
@@ -91,9 +91,9 @@ export default function EmployeeHome() {
             <CardContent>
               <div className="space-y-4">
                 {projects.map((project) => (
-                  <div key={project.name} className="space-y-2">
+                  <div key={project.annotator} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium leading-none">{project.name}</p>
+                      <p className="text-sm font-medium leading-none">{project.annotator}</p>
                       <div className="text-sm text-muted-foreground">{project.progress}%</div>
                     </div>
                     <Progress value={project.progress} className="h-2" />
@@ -106,35 +106,7 @@ export default function EmployeeHome() {
               </div>
             </CardContent>
           </Card>
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Team Performance</CardTitle>
-              <CardDescription>Annotation accuracy and speed</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { name: "Team A", project: "Traffic Sign Recognition", accuracy: 98.5, speed: 120, completed: 750 },
-                  { name: "Team B", project: "Medical Imaging Analysis", accuracy: 97.8, speed: 110, completed: 500 },
-                  { name: "Team C", project: "Satellite Imagery Labeling", accuracy: 97.2, speed: 115, completed: 250 },
-                  { name: "Team D", project: "Facial Recognition Dataset", accuracy: 98.0, speed: 118, completed: 600 },
-                ].map((team) => (
-                  <div key={team.name} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium leading-none">{team.name}</p>
-                      <div className="text-sm text-muted-foreground">{team.project}</div>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span>{team.accuracy}% accuracy</span>
-                      <span>{team.speed} img/hour</span>
-                      <span>{team.completed} completed</span>
-                    </div>
-                    <Progress value={team.accuracy} className="h-1" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
           <Card className="col-span-4">
