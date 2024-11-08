@@ -25,26 +25,46 @@ export default function ProjectsPage() {
   const [projectToEdit, setProjectToEdit] = useState(null);
   const [newDueDate, setNewDueDate] = useState(null);
   const [projectManagers, setProjectManagers] = useState([]);
-
   const fetchData = useCallback(async () => {
     try {
-      const [projectsResponse, managersResponse] = await Promise.all([
+      const [projectsResponse, managersResponse] = await Promise.allSettled([
         axios.get(`${import.meta.env.VITE_BACKEND_URL}/getProjects`),
         axios.get(`${import.meta.env.VITE_BACKEND_URL}/getEmployees`)
       ]);
-
-      setProjects(projectsResponse.data);
-      setProjectManagers(managersResponse.data);
+  
+      // Check each response individually
+      if (projectsResponse.status === "fulfilled") {
+        setProjects(projectsResponse.value.data);
+      } else {
+        console.error("Error fetching projects:", projectsResponse.reason);
+        toast({
+          title: "Error fetching projects",
+          description: "Could not fetch projects.",
+          variant: "destructive",
+        });
+      }
+  
+      if (managersResponse.status === "fulfilled") {
+        setProjectManagers(managersResponse.value.data);
+      } else {
+        console.error("Error fetching managers:", managersResponse.reason);
+        toast({
+          title: "Error fetching managers",
+          description: "Could not fetch managers.",
+          variant: "destructive",
+        });
+      }
+  
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Unexpected error:", error);
       toast({
-        title: "Error fetching data",
-        description: "Could not fetch projects and managers.",
+        title: "Unexpected error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     }
   }, [toast]);
-
+  
   useEffect(() => {
     fetchData();
   }, [fetchData]);

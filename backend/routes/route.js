@@ -3,14 +3,14 @@ import multer from 'multer';
 
 
 import { adminRegister } from '../controllers/admin.js';
-import {registerEmployee, getEmployees, updateRole, empSkillAdd, getOwnEmployeeDetail, getEmployeeTeamProjectDetails } from '../controllers/client.js'
+import {registerEmployee, getEmployees, updateRole, empSkillAdd, getOwnEmployeeDetail, getEmployeeTeamProjectDetails, editWorkStatus } from '../controllers/client.js'
 import { handleAttendanceUpload, handleGetAttendance } from '../controllers/attendance.js';
 import { createTeam,checkTeamLead,deleteTeam, getTeams, getTaskUnassignedTeams } from '../controllers/teams.js';
 import { createProject, deleteProject, editDueDate, getProject, getAllProjects} from '../controllers/project.js';
-import { countTeamLeadStats, getTeamLead, fetchTeamLead, updateTeamLead, getTeamLeadTasks } from '../controllers/teamlead.js';
-import { updateprojectmanager , getProjectManager} from '../controllers/projectmanager.js';
+import { countTeamLeadStats, getTeamLead, fetchTeamLead, updateTeamLead, getTeamLeadTasks, getTaskEmp } from '../controllers/teamlead.js';
+import { updateprojectmanager , getProjectManager, getTeamNameAndCount, getTaskEmpName, getTeamLeadNameAndCount} from '../controllers/projectmanager.js';
 import { createTask, deleteTask, getTasks } from '../controllers/tasks.js';
-import { assignWork, getEmployeesToAssign } from "../controllers/empwork.js"
+import { assignWork, getEmployeesToAssign, getEmployeesWorkFolder } from "../controllers/empwork.js"
 
 import { login, resetPassword } from '../Auth/auth.js';
 import { forgotPassword } from '../utils/mailSend.js';
@@ -77,5 +77,14 @@ router.get('/getempDetails',getEmployeeTeamProjectDetails)
 //WORK EMPLOYEE
 router.post('/assignWork', assignWork);
 router.get('/displayEmployees', getEmployeesToAssign);
+router.get('/folderPath', getEmployeesWorkFolder)
+router.post('/editStatus', editWorkStatus);
+router.post('/getLeadTaskEmp',getTaskEmp)
+
+router.get('/getTeamNameAndCount',getTeamNameAndCount)
+router.get('/getTaskEmpName',getTaskEmpName)
+
+router.get('/teamLeadNameCount', getTeamLeadNameAndCount);
+
 
 export { router };

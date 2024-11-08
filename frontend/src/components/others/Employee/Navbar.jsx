@@ -11,7 +11,7 @@ import {
 const sidebarItems = [
   { icon: Home, label: 'Dashboard', path: '/employee/home' },
   { icon: Package, label: 'Projects', path: '/employee/projects' },
-  { icon: ShieldCheck, label: 'Tasks', path: '/employee/tasks' },
+ 
   { icon: Users, label: 'Team', path: '/employee/team' },
   { icon: Calendar, label: 'Attendance', path: '/employee/attendance' },
 ];

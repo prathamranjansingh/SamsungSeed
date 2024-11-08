@@ -1,12 +1,19 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import axios from 'axios'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -18,39 +25,84 @@ import {
 import { Copy, Check } from 'lucide-react'
 
 export function ProjectView() {
-  const [teamLeadPath, setTeamLeadPath] = useState('/path/to/server/provided/by/teamlead')
+  const [teamLeadPath, setTeamLeadPath] = useState('')
   const [serverPath, setServerPath] = useState('')
   const [totalImages, setTotalImages] = useState(0)
-  const [isTaskComplete, setIsTaskComplete] = useState(false)
+  const [taskStatus, setTaskStatus] = useState('working')
   const [updateNote, setUpdateNote] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const teamLeadPathRef = useRef(null)
 
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/folderPath`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        console.log(response.data);
+        
+        setTeamLeadPath(response.data.folderPath)
+      } catch (err) {
+        console.error('Error fetching team data:', err)  
+      }
+    }
+    
+    fetchTeamData();
+  }, [])
+
   const handleSubmit = (e) => {
     e.preventDefault()
     setIsModalOpen(true)
   }
 
-  const confirmSubmit = () => {
-    console.log({
-      serverPath,
-      totalImages,
-      isTaskComplete,
-      updateNote
-    })
-    setIsModalOpen(false)
-    alert('Update submitted successfully!')
-  }
+  const confirmSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Authorization token is missing. Please log in again.");
+        return;
+      }
+  
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/editStatus`,
+        { status: taskStatus },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+  
+      if (response.data.success) {
+        alert('Work status updated successfully!');
+      } else {
+        alert(response.data.message || 'Failed to update status');
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+      alert('There was an error submitting your update.');
+    }
+  
+    setIsModalOpen(false);
+  };
+  
 
   const copyTeamLeadPath = () => {
-    if (teamLeadPathRef.current) {
-      teamLeadPathRef.current.select()
-      document.execCommand('copy')
-      setIsCopied(true)
-      setIsCopyModalOpen(true)
-      setTimeout(() => setIsCopied(false), 2000)
+    if (teamLeadPath) {
+      navigator.clipboard.writeText(teamLeadPath)
+        .then(() => {
+          setIsCopied(true);
+          setIsCopyModalOpen(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        })
+        .catch((err) => {
+          console.error('Error copying text: ', err);
+        });
     }
   }
 
@@ -85,35 +137,21 @@ export function ProjectView() {
                   </Button>
                 </div>
               </div>
+              
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="taskStatus">Task Status</Label>
+                <Select value={taskStatus} onValueChange={setTaskStatus}>
+                  <SelectTrigger id="taskStatus">
+                    <SelectValue placeholder="Select task status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="working">Working</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
              
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="totalImages">Total Images</Label>
-                <Input 
-                  id="totalImages" 
-                  type="number"
-                  placeholder="Enter total number of images"
-                  value={totalImages}
-                  onChange={(e) => setTotalImages(parseInt(e.target.value))}
-                  required
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="taskComplete" 
-                  checked={isTaskComplete}
-                  onCheckedChange={(checked) => setIsTaskComplete(checked)}
-                />
-                <Label htmlFor="taskComplete">Task Complete</Label>
-              </div>
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="updateNote">Update Note</Label>
-                <Textarea 
-                  id="updateNote" 
-                  placeholder="Provide any additional updates or notes for your team lead"
-                  value={updateNote}
-                  onChange={(e) => setUpdateNote(e.target.value)}
-                />
-              </div>
             </div>
           </form>
         </CardContent>
@@ -131,25 +169,13 @@ export function ProjectView() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="taskStatus" className="text-right">
+                Task Status
+              </Label>
+              <div className="col-span-3">{taskStatus === 'working' ? 'Working' : 'Completed'}</div>
+            </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Total Images
-              </Label>
-              <div className="col-span-3">{totalImages}</div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Task Complete
-              </Label>
-              <div className="col-span-3">{isTaskComplete ? 'Yes' : 'No'}</div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Update Note
-              </Label>
-              <div className="col-span-3">{updateNote}</div>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
@@ -174,3 +200,14 @@ export function ProjectView() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
