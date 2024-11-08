@@ -1,11 +1,19 @@
+'use client'
+
 import { useState, useRef, useEffect } from 'react'
-import axios from 'axios'  // Don't forget to import axios
+import axios from 'axios'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -20,18 +28,17 @@ export function ProjectView() {
   const [teamLeadPath, setTeamLeadPath] = useState('')
   const [serverPath, setServerPath] = useState('')
   const [totalImages, setTotalImages] = useState(0)
-  const [isTaskComplete, setIsTaskComplete] = useState(false)
+  const [taskStatus, setTaskStatus] = useState('working')
   const [updateNote, setUpdateNote] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const teamLeadPathRef = useRef(null)
 
-  // Fetch data on component mount
   useEffect(() => {
     const fetchTeamData = async () => {
       try {
-        const token = localStorage.getItem('token'); // Make sure to get the token dynamically
+        const token = localStorage.getItem('token');
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/folderPath`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -39,30 +46,51 @@ export function ProjectView() {
         })
         console.log(response.data);
         
-        setTeamLeadPath(response.data.folderPath)  // Set the response data to state
+        setTeamLeadPath(response.data.folderPath)
       } catch (err) {
         console.error('Error fetching team data:', err)  
       }
     }
     
-    fetchTeamData();  // Call the function to fetch data
-  }, [])  // Empty dependency array to ensure it runs only once
+    fetchTeamData();
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
     setIsModalOpen(true)
   }
 
-  const confirmSubmit = () => {
-    console.log({
-      serverPath,
-      totalImages,
-      isTaskComplete,
-      updateNote
-    })
-    setIsModalOpen(false)
-    alert('Update submitted successfully!')
-  }
+  const confirmSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Authorization token is missing. Please log in again.");
+        return;
+      }
+  
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/editStatus`,
+        { status: taskStatus },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+  
+      if (response.data.success) {
+        alert('Work status updated successfully!');
+      } else {
+        alert(response.data.message || 'Failed to update status');
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+      alert('There was an error submitting your update.');
+    }
+  
+    setIsModalOpen(false);
+  };
+  
 
   const copyTeamLeadPath = () => {
     if (teamLeadPath) {
@@ -77,7 +105,6 @@ export function ProjectView() {
         });
     }
   }
-  
 
   return (
     <div className="container mx-auto p-4">
@@ -111,15 +138,20 @@ export function ProjectView() {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="taskComplete" 
-                  checked={isTaskComplete}
-                  onCheckedChange={(checked) => setIsTaskComplete(checked)}
-                />
-                <Label htmlFor="taskComplete">Task Complete</Label>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="taskStatus">Task Status</Label>
+                <Select value={taskStatus} onValueChange={setTaskStatus}>
+                  <SelectTrigger id="taskStatus">
+                    <SelectValue placeholder="Select task status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="working">Working</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
+             
             </div>
           </form>
         </CardContent>
@@ -138,23 +170,12 @@ export function ProjectView() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Total Images
+              <Label htmlFor="taskStatus" className="text-right">
+                Task Status
               </Label>
-              <div className="col-span-3">{totalImages}</div>
+              <div className="col-span-3">{taskStatus === 'working' ? 'Working' : 'Completed'}</div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Task Complete
-              </Label>
-              <div className="col-span-3">{isTaskComplete ? 'Yes' : 'No'}</div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Update Note
-              </Label>
-              <div className="col-span-3">{updateNote}</div>
-            </div>
+            
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
@@ -179,3 +200,14 @@ export function ProjectView() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
+

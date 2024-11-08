@@ -1,41 +1,33 @@
-import axios from 'axios';
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-function Home() {
-  const [employees, setEmployees] = useState([]);
+// Mock data - replace with actual API call in production
+const mockEmployees = [
+  { id: 1, name: "Alice Johnson", task: "UI Design", status: "completed" },
+  { id: 2, name: "Bob Smith", task: "Backend API", status: "working" },
+  { id: 3, name: "Charlie Brown", task: "Database Migration", status: "pending" },
+  { id: 4, name: "Diana Ross", task: "Testing", status: "working" },
+  { id: 5, name: "Ethan Hunt", task: "Documentation", status: "completed" },
+];
+
+function TeamProgress() {
+  const [employees, setEmployees] = useState(mockEmployees);
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/getLeadTaskEmp`, {}, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        const data = response.data;
-        const formattedData = data.map(emp => ({
-          id: emp.id,
-          name: emp.name,
-          folder_path: emp.folder_path,
-          status: emp.status,
-        }));
-
-        setEmployees(formattedData);
-
-      } catch (error) {
-        console.error("Error fetching employees:", error);
-      }
-    };
-
-    fetchEmployees();
+    // In a real application, you would fetch data from your API here
+    // Example:
+    // const fetchEmployees = async () => {
+    //   const response = await fetch('/api/employees');
+    //   const data = await response.json();
+    //   setEmployees(data);
+    // };
+    // fetchEmployees();
   }, []);
 
   const filteredEmployees = filter === 'all' 
@@ -64,6 +56,19 @@ function Home() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed Tasks</CardTitle>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{statusCounts.completed || 0}</div>
@@ -72,6 +77,18 @@ function Home() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+            </svg>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{statusCounts.working || 0}</div>
@@ -80,6 +97,18 @@ function Home() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{statusCounts.pending || 0}</div>
@@ -109,7 +138,7 @@ function Home() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Folder Path</TableHead>
+                <TableHead>Task</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -117,7 +146,7 @@ function Home() {
               {filteredEmployees.map((employee) => (
                 <TableRow key={employee.id}>
                   <TableCell className="font-medium">{employee.name}</TableCell>
-                  <TableCell>{employee.folder_path}</TableCell>
+                  <TableCell>{employee.task}</TableCell>
                   <TableCell>
                     <Badge className={`${getStatusColor(employee.status)} text-white`}>
                       {employee.status.charAt(0).toUpperCase() + employee.status.slice(1)}
@@ -133,4 +162,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default TeamProgress;

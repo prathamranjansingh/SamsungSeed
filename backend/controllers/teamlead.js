@@ -213,3 +213,52 @@ export async function getTeamLeadTasks(req, res) {
         res.status(500).json({ success: false, message: "Failed to fetch tasks." });
     }
 }
+
+
+//Function to get team members details based on team lead id from jwt token
+export async function getTaskEmp(req, res){
+    const authHeader = req.headers.authorization;
+    console.log(authHeader);
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Not Authorized. Please login again.",
+        });
+    }
+
+    const token = authHeader.split(" ")[1];
+    let user;
+
+    try {
+        // Decode and verify the token
+        user = jwt.verify(token, process.env.JWT_SECRET);
+        const userEmail = user.id; // user.id contains the email
+
+        // Get the team lead ID based on the user's email
+        const teamLead = await db`SELECT id FROM teamlead WHERE email = ${userEmail}`;
+        if (teamLead.length === 0) {
+            return res.status(404).send({ error: "Team lead not found." });
+        }
+        const teamLeadId = teamLead[0].id;
+        console.log(teamLeadId);
+
+        // Fetch team members from empwork table where it has team member id, name from employee table using id from empwork team_member_id , status
+        const teamMembers = await db`
+            SELECT em.id, em.name, ew.folder_path, ew.status
+            FROM empwork AS ew
+            JOIN employee AS em ON em.id = ew.team_member_id
+            WHERE ew.team_lead_id = ${teamLeadId}
+        `;
+
+        res.status(200).send(teamMembers);
+    } catch (err) {
+        console.error(err);
+
+        if (err.name === 'JsonWebTokenError') {
+            return res.status(401).send({ error: "Invalid token" });
+        }
+
+        res.status(500).send({ error: "Internal Server Error" });
+    }
+}

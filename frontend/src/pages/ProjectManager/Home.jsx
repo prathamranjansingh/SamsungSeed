@@ -1,162 +1,254 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import {
-  BarChart3,
-  CheckCircle,
-  Image as ImageIcon,
-  Users,
-  FileCheck2,
-  Send,
-  AlertTriangle,
-} from 'lucide-react';
+'use client'
 
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 
-export default function ProjectManagerHome(){
-    const projects = [
-        { id: 1, name: "Traffic Sign Recognition", progress: 75, totalImages: 1000, completedImages: 750, urgentReviews: 5 },
-        { id: 2, name: "Medical Imaging Analysis", progress: 60, totalImages: 800, completedImages: 480, urgentReviews: 2 },
-        { id: 3, name: "Satellite Imagery Labeling", progress: 40, totalImages: 1200, completedImages: 480, urgentReviews: 8 },
-      ]
-      const teamMembers = [
-        { id: 1, name: "Alice Johnson", role: "Senior Annotator", performance: 95, avatar: "/avatars/alice.jpg" },
-        { id: 2, name: "Bob Smith", role: "Annotator", performance: 88, avatar: "/avatars/bob.jpg" },
-        { id: 3, name: "Carol Williams", role: "Quality Checker", performance: 92, avatar: "/avatars/carol.jpg" },
-        { id: 4, name: "David Brown", role: "Annotator", performance: 85, avatar: "/avatars/david.jpg" },
-      ]
-    return(
-        <div className="flex flex-col min-h-screen">
-            <main className="flex-1 p-4 md:p-6 space-y-6">
-                <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                    <div className="text-2xl font-bold">{projects.length}</div>
-                    <p className="text-xs text-muted-foreground">
-                        {projects.filter(p => p.progress === 100).length} completed
-                    </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                    <div className="text-2xl font-bold">20</div>
-                    <p className="text-xs text-muted-foreground">
-                    6 Each Team
-                    </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Images Annotated</CardTitle>
-                    <FileCheck2 className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                    <div className="text-2xl font-bold">
-                        {projects.reduce((sum, project) => sum + project.completedImages, 0)}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                        Out of {projects.reduce((sum, project) => sum + project.totalImages, 0)} total
-                    </p>
-                    </CardContent>
-                </Card>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                    <CardHeader>
-                    <CardTitle>Active Annotation Teams</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                    <div className="space-y-4">
-                        {projects.map((project) => (
-                        <div key={project.name} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium leading-none">{project.name}</p>
-                            <div className="text-sm text-muted-foreground">{project.progress}%</div>
-                            </div>
-                            <Progress value={project.progress} className="h-2" />
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>{project.team} team members</span>
-                            <span>{project.remaining} of {project.total} images remaining</span>
-                            </div>
-                        </div>
+export default function Home() {
+  const [teamLeads, setTeamLeads] = useState([])
+  const [tasks, setTasks] = useState([])
+  const [teams, setTeams] = useState([])
+
+  useEffect(() => {
+    const fetchTeamLeads = async () => {
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/teamLeadNameCount`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            }
+          })
+          console.log("Team Leads Data:", response.data)
+          // Convert tasksCompleted and totalTasks to numbers
+          const teamLeadsWithNumbers = response.data.map(lead => ({
+            ...lead,
+            tasksCompleted: parseInt(lead.taskscompleted),  // Convert to number
+            totalTasks: parseInt(lead.totaltasks),  // Convert to number
+          }))
+          setTeamLeads(teamLeadsWithNumbers)  // Set the team leads with numbers
+        } catch (error) {
+          console.error("Error fetching team leads:", error)
+        }
+      }
+
+    const fetchTeams = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/getTeamNameAndCount`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          }
+        })    
+        setTeams(response.data)  
+      } catch (error) {
+        console.error("Error fetching teams:", error)
+      }
+    }
+
+    const fetchTasks = async () => {
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/getTaskEmpName`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            }
+          })
+          setTasks(response.data) 
+        } catch (error) {
+          console.error("Error fetching tasks:", error)
+        }
+      }
+      
+    fetchTasks()
+    fetchTeamLeads()
+    fetchTeams()
+  }, [])
+
+  const totalTasks = tasks.length
+  const completedTasks = tasks.filter(task => task.status === 'completed').length
+  const inProgressTasks = tasks.filter(task => task.status === 'in-progress').length
+  const pendingTasks = tasks.filter(task => task.status === 'pending').length
+
+  const taskStatusData = [
+    { name: 'Completed', value: completedTasks },
+    { name: 'In Progress', value: inProgressTasks },
+    { name: 'Pending', value: pendingTasks },
+  ]
+
+  const COLORS = ['#4CAF50', '#2196F3', '#FFC107']
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'completed': return 'bg-green-500'
+      case 'in-progress': return 'bg-blue-500'
+      case 'pending': return 'bg-yellow-500'
+      default: return 'bg-gray-500'
+    }
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6">Project Manager Dashboard</h1>
+      
+      <div className="grid gap-4 md:grid-cols-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Teams</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{teams.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Team Leads</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{teamLeads.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTasks}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed Tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{completedTasks}</div>
+            <Progress value={(completedTasks / totalTasks) * 100} className="mt-2" />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="team-leads" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="team-leads">Team Leads</TabsTrigger>
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="teams">Teams</TabsTrigger>
+        </TabsList>
+        <TabsContent value="team-leads">
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Leads Performance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Team</TableHead>
+                    <TableHead>Tasks Completed</TableHead>
+                    <TableHead>Progress</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teamLeads.map((lead) => {
+                    const progress = lead.totalTasks > 0 ? (lead.tasksCompleted / lead.totalTasks) * 100 : 0;
+                    return (
+                      <TableRow key={lead.id}>
+                        <TableCell className="font-medium">{lead.name}</TableCell>
+                        <TableCell>{lead.team}</TableCell>
+                        <TableCell>{lead.tasksCompleted} / {lead.totalTasks}</TableCell>
+                        <TableCell>
+                          <Progress value={progress} className="w-[60%]" />
+                          <div className="text-sm mt-1">{progress.toFixed(2)}%</div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="tasks">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tasks Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Task Name</TableHead>
+                      <TableHead>Team</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tasks.map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell className="font-medium">{task.name}</TableCell>
+                        <TableCell>{task.team}</TableCell>
+                        <TableCell>
+                          <Badge className={`${getStatusColor(task.status)} text-white`}>
+                            {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={taskStatusData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => percent > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : null}
+                      >
+                        {taskStatusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
-                    </div>
-                    </CardContent>
-                </Card>
-                <Card className="col-span-4">
-                    <CardHeader>
-                    <CardTitle>Team Performance</CardTitle>
-                    <CardDescription>Annotation accuracy and speed</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                    <div className="space-y-4">
-                        {[
-                        { name: "Team A", project: "Traffic Sign Recognition", accuracy: 98.5, speed: 120, completed: 750 },
-                        { name: "Team B", project: "Medical Imaging Analysis", accuracy: 97.8, speed: 110, completed: 500 },
-                        { name: "Team C", project: "Satellite Imagery Labeling", accuracy: 97.2, speed: 115, completed: 250 },
-                        { name: "Team D", project: "Facial Recognition Dataset", accuracy: 98.0, speed: 118, completed: 600 },
-                        ].map((team) => (
-                        <div key={team.name} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium leading-none">{team.name}</p>
-                            <div className="text-sm text-muted-foreground">{team.project}</div>
-                            </div>
-                            <div className="flex justify-between text-xs">
-                            <span>{team.accuracy}% accuracy</span>
-                            <span>{team.speed} img/hour</span>
-                            <span>{team.completed} completed</span>
-                            </div>
-                            <Progress value={team.accuracy} className="h-1" />
-                        </div>
-                        ))}
-                    </div>
-                    </CardContent>
-                </Card>
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                    <CardHeader>
-                    <CardTitle>Quality Check Queue</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                    <div className="space-y-4">
-                        {[
-                        { project: "Traffic Sign Recognition", annotator: "Alice J.", images: 50, time: "2 hours ago" },
-                        { project: "Medical Imaging Analysis", annotator: "Bob S.", images: 75, time: "4 hours ago" },
-                        { project: "Satellite Imagery Labeling", annotator: "Carol W.", images: 60, time: "1 day ago" },
-                        { project: "Facial Recognition Dataset", annotator: "David M.", images: 80, time: "2 days ago" },
-                        ].map((queue, index) => (
-                        <div key={index} className="flex items-center space-x-4">
-                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                            <ImageIcon className="h-4 w-4" />
-                            </div>
-                            <div className="flex-1 space-y-1">
-                            <p className="text-sm font-medium leading-none">{queue.project}</p>
-                            <p className="text-xs text-muted-foreground">Annotator: {queue.annotator}</p>
-                            </div>
-                            <div className="text-sm text-right">
-                            <div>{queue.images} images</div>
-                            <div className="text-xs text-muted-foreground">{queue.time}</div>
-                            </div>
-                            <Button size="sm" variant="outline">
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Review
-                            </Button>
-                        </div>
-                        ))}
-                    </div>
-                    </CardContent>
-                </Card>
-                
-                </div>
-            </main>
-        </div>   
-    )
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="teams">
+          <Card>
+            <CardHeader>
+              <CardTitle>Teams Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Team Name</TableHead>
+                    <TableHead>Team Leads</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teams.map((team) => (
+                    <TableRow key={team.id}>
+                      <TableCell>{team.name}</TableCell>
+                      <TableCell>{team.teamLeads}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
 }

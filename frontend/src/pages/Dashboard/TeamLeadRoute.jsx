@@ -5,7 +5,8 @@ import QualityCheckerPage from '../TeamLead/QualityChecking';
 
 import EmployeeHome from '../TeamLead/Home';
 import DistributeWork from '../TeamLead/DistributeWork';
-Layout
+
+
 const TeamLeadRoute = () => {
   return (
     <div>

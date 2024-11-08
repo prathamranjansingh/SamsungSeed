@@ -62,14 +62,7 @@ const Header = () => {
               <Package className="h-5 w-5" />
               Projects
             </Link>
-            <Link
-              to="/employee/tasks"
-              className={selected === "/employee/tasks" ? activeClassName : baseClassName}
-              onClick={() => setSelected("/employee/tasks")}
-            >
-              <ShieldCheck className="h-5 w-5" />
-             Task
-            </Link>
+           
             <Link
               to="/employee/team"
               className={selected === "/employee/team" ? activeClassName : baseClassName}

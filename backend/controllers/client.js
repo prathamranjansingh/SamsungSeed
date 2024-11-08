@@ -23,17 +23,16 @@ const registerSchema = z.object({
 export async function getEmployees(req, res) {
   try {
     const employees = await db`
-      SELECT id, name, email, skill, experience
-      FROM Employee
-      WHERE id NOT IN (
-        SELECT UNNEST(team_members) FROM Teams
-      )
+      SELECT e.id, e.name, e.email, e.skill, e.experience
+      FROM Employee e
+      LEFT JOIN Teams t ON e.id = ANY(t.team_members)
+      WHERE t.team_members IS NULL
     `;
     return res.json(employees); // Return employee data as JSON
   } catch (err) {
     console.error("Error retrieving employees:", err);
     return res.status(500).send("Error retrieving employees");
-  }
+  }
 }
 
 export async function getOwnEmployeeDetail(req, res) {
@@ -211,3 +210,56 @@ export async function getEmployeeTeamProjectDetails(req, res)  {
       });
   }
 }
+
+
+
+//Function to edit status of work assigned to team members
+export async function editWorkStatus(req, res) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+          success: false,
+          message: "Not Authorized. Please login again.",
+      });
+  }
+
+  const token = authHeader.split(" ")[1];
+  let user;
+
+  try {
+      user = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Fetch team member id from auth token
+      const teamMemberResult = await db`SELECT id FROM employee WHERE email = ${user.id}`;
+      // console.log("teamMemberResult:", teamMemberResult);
+
+      const team_member_id = teamMemberResult[0]?.id;
+      // console.log("team_member_id:", team_member_id);
+
+      const { status } = req.body;
+
+      if (!status) {
+          return res.status(400).json({
+              success: false,
+              message: "status is required.",
+          });
+      }
+
+      // Update status in empwork table
+      await db`
+          UPDATE empwork
+          SET status = ${status}
+          WHERE team_member_id = ${team_member_id}
+      `;
+
+      return res.status(200).json({
+          success: true,
+          message: "Work status updated successfully",
+      });
+  } catch (err) {
+      console.error(err);
+      return res.status(403).json({ error: "Invalid token" });
+  }
+}
+
